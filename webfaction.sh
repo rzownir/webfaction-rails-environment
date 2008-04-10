@@ -1,16 +1,23 @@
 ###############################################################################
-# Set the variables required by this script.
+# Set the variables required by this script. PREFIX is the location of your
+# "Private Application Environment". You could make it anywhere in your home
+# directory. It could be your home directory itself, but I prefer it separate
+# and compartmentalized so that it conforms to the File System Hierarchy
+# Standard as much as possible. The home directory contains nonstandard
+# directories like logs and webapps as well as hidden files and directories
+# that are better off separate. That way, if you aren't happy with your private
+# application environment, you could simply remove the directory and start over
+# fresh. I personally use ~/apps for the private application environment.
 
-export PAE_PREFIX=$HOME/apps
-export APPNAME=typo
-export APPPORT=4000
-export MONITPORT=4001
+export PREFIX=$HOME/apps
+export APP_NAME=typo
+export APP_PORT=4000
+export MONIT_PORT=4001
 
 ###############################################################################
-# Write a clean ~/.bash_profile file. This will overwrite the one that already
-# exists, so a backup is made in case there's something important in the
-# original. The EOF string limiter definition can be quoted with single or
-# double quotes at the beginning to prevent parameter substitution.
+# Back up ~/.bash_profile and write a clean file. The string limiter definition
+# can be quoted with single or double quotes at the beginning to prevent
+# parameter substitution.
 
 cp ~/.bash_profile ~/.bash_profile.old
 
@@ -26,20 +33,11 @@ fi
 EOF
 
 ###############################################################################
-# Write a new ~/.bashrc file. PAE_PREFIX is the location of your "Private
-# Application Environment". You could make it anywhere in your home directory.
-# It could even be your home directory itself, but I prefer it separate and
-# compartmentalized so that it conforms to the File System Hierarchy Standard
-# as much as possible. The home directory contains nonstandard directories like
-# logs and webapps as well as hidden files and directories that are better off
-# separate. That way, if you aren't happy with your private application
-# environment, you could simply remove the apps directory and start over fresh.
-# I personally use ~/apps for the private application environment. After defining
-# PAE_PREFIX, extend the PATH variable to include the paths of the applications
-# we're about to build. As with ~/.bash_profile, back up the ~/.bashrc file. If
-# you're wondering why the PATH is defined in ~/.bashrc and not ~/.bash_profile,
-# it's because ~/.bashrc alone is loaded when executing remote tasks without a
-# running terminal - or something along those lines.
+# Back up ~/.bashrc and write a new file. Extend the PATH variable to include
+# the paths of the applications we're about to build. If you're wondering why
+# the PATH is defined in ~/.bashrc and not ~/.bash_profile, it's because
+# ~/.bashrc alone is loaded when executing remote tasks without a running
+# terminal - or something along those lines.
 
 cp ~/.bashrc ~/.bashrc.old
 
@@ -53,7 +51,7 @@ fi
 
 # User specific aliases and functions
 
-PATH=$PAE_PREFIX/bin:$PAE_PREFIX/sbin:\$PATH
+PATH=$PREFIX/bin:$PREFIX/sbin:\$PATH
 EOF
 
 ###############################################################################
@@ -73,16 +71,15 @@ EOF
 . ~/.bash_profile
 
 ###############################################################################
-# Create the private application environment directory, assuming the upper
-# level directory already exists.
+# Create the private application environment directory
 
-mkdir $PAE_PREFIX
-chmod 755 $PAE_PREFIX
+mkdir -p $PREFIX
+chmod 755 $PREFIX
 
 ###############################################################################
 # Create the src directory where sources will be downloaded and compiled.
 
-mkdir $PAE_PREFIX/src
+mkdir $PREFIX/src
 
 ###############################################################################
 # 1. ruby 1.8.6 patchlevel 114
@@ -91,11 +88,11 @@ mkdir $PAE_PREFIX/src
 # custom options enabled when the configure script is run. I leave the
 # customization up to you, but it's fine as it is here.
 
-cd $PAE_PREFIX/src
+cd $PREFIX/src
 wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p114.tar.gz
 tar xzvf ruby-1.8.6-p114.tar.gz
 cd ruby-1.8.6-p114
-./configure --prefix=$PAE_PREFIX
+./configure --prefix=$PREFIX
 make
 make install
 make install-doc
@@ -107,11 +104,11 @@ make install-doc
 # can install, update, and uninstall whatever gems you want without having to
 # resort to freezing gems in your rails applications.
 
-cd $PAE_PREFIX/src
+cd $PREFIX/src
 wget http://rubyforge.org/frs/download.php/29548/rubygems-1.0.1.tgz
 tar xzvf rubygems-1.0.1.tgz
 cd rubygems-1.0.1
-$PAE_PREFIX/bin/ruby setup.rb
+$PREFIX/bin/ruby setup.rb
 
 ###############################################################################
 # 3. Install essential gems
@@ -151,15 +148,15 @@ gem install eventmachine --source http://code.macournoyer.com
 # at http://www.kernel.org/pub/software/scm/git/ as tarballs. We'll install the
 # man pages from there.
 
-cd $PAE_PREFIX/src
+cd $PREFIX/src
 wget http://kernel.org/pub/software/scm/git/git-1.5.4.5.tar.gz
 tar xzvf git-1.5.4.5.tar.gz
 cd git-1.5.4.5
-./configure --prefix=$PAE_PREFIX
+./configure --prefix=$PREFIX
 make all
 make install
 
-cd $PAE_PREFIX/share/man/
+cd $PREFIX/share/man/
 wget http://www.kernel.org/pub/software/scm/git/git-manpages-1.5.4.5.tar.gz
 tar xzvf git-manpages-1.5.4.5.tar.gz
 rm git-manpages-1.5.4.5.tar.gz
@@ -188,7 +185,7 @@ rm git-manpages-1.5.4.5.tar.gz
 # You don't have to install the three aforementioned modules, but it's not a
 # bad idea to. Just make sure to include the nginx-upstream-fair module.
 
-cd $PAE_PREFIX/src
+cd $PREFIX/src
 wget http://www.openssl.org/source/openssl-0.9.8g.tar.gz
 tar xzvf openssl-0.9.8g.tar.gz
 wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.6.tar.gz
@@ -200,22 +197,22 @@ tar xzvf nginx-0.5.35.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
 cd nginx-0.5.35
 ./configure \
---with-pcre=$PAE_PREFIX/src/pcre-7.6 \
---with-zlib=$PAE_PREFIX/src/zlib-1.2.3 \
---with-openssl=$PAE_PREFIX/src/openssl-0.9.8g \
+--with-pcre=$PREFIX/src/pcre-7.6 \
+--with-zlib=$PREFIX/src/zlib-1.2.3 \
+--with-openssl=$PREFIX/src/openssl-0.9.8g \
 --with-http_ssl_module \
 --with-http_flv_module \
 --with-http_realip_module \
---add-module=$PAE_PREFIX/src/nginx-upstream-fair \
---prefix=$PAE_PREFIX \
---conf-path=$PAE_PREFIX/etc/nginx/nginx.conf \
---error-log-path=$PAE_PREFIX/var/log/nginx/error.log \
---http-log-path=$PAE_PREFIX/var/log/nginx/access.log \
---pid-path=$PAE_PREFIX/var/run/nginx.pid \
---lock-path=$PAE_PREFIX/var/run/nginx.lock \
---http-client-body-temp-path=$PAE_PREFIX/var/spool/nginx/client_body_temp \
---http-proxy-temp-path=$PAE_PREFIX/var/spool/nginx/proxy_temp \
---http-fastcgi-temp-path=$PAE_PREFIX/var/spool/nginx/fastcgi_temp
+--add-module=$PREFIX/src/nginx-upstream-fair \
+--prefix=$PREFIX \
+--conf-path=$PREFIX/etc/nginx/nginx.conf \
+--error-log-path=$PREFIX/var/log/nginx/error.log \
+--http-log-path=$PREFIX/var/log/nginx/access.log \
+--pid-path=$PREFIX/var/run/nginx.pid \
+--lock-path=$PREFIX/var/run/nginx.lock \
+--http-client-body-temp-path=$PREFIX/var/spool/nginx/client_body_temp \
+--http-proxy-temp-path=$PREFIX/var/spool/nginx/proxy_temp \
+--http-fastcgi-temp-path=$PREFIX/var/spool/nginx/fastcgi_temp
 make
 make install
 
@@ -223,46 +220,45 @@ make install
 # Remove the html directory created by nginx. It's out of place and was only
 # meant to complement the example nginx.conf file that will be replaced soon.
 
-rm -rfd $PAE_PREFIX/html
+rm -rf $PREFIX/html
 
 ###############################################################################
 # Remove the log directory created by nginx, create a symlink to the central
 # user log directory, and recreate the nginx directory inside the symlinked
 # log directory.
 
-rm -rfd $PAE_PREFIX/var/log
-ln -s $HOME/logs/user $PAE_PREFIX/var/log
-mkdir $PAE_PREFIX/var/log/nginx
+rm -rf $PREFIX/var/log
+ln -s $HOME/logs/user $PREFIX/var/log
+mkdir $PREFIX/var/log/nginx
 
 ###############################################################################
 # Create the necessary directory structure for client_body_temp, proxy_temp,
 # and fastcgi_temp directories. Nginx will create those directories for us when
 # it runs.
 
-mkdir $PAE_PREFIX/var/spool
-mkdir $PAE_PREFIX/var/spool/nginx
+mkdir -p $PREFIX/var/spool/nginx
 
 ###############################################################################
-# Symlink $PAE_PREFIX/var/www to ~/webapps.
+# Symlink $PREFIX/var/www to ~/webapps.
 
-ln -s $HOME/webapps $PAE_PREFIX/var/www
+ln -s $HOME/webapps $PREFIX/var/www
 
 ###############################################################################
 # Create a tmp directory in var.
 
-mkdir $PAE_PREFIX/var/tmp
-chmod 777 $PAE_PREFIX/var/tmp
+mkdir $PREFIX/var/tmp
+chmod 777 $PREFIX/var/tmp
 
 ###############################################################################
 # Create a directory to store rc scripts for daemons. Your crontab can be used
 # to launch your daemons on reboot using the scripts stored in this directory.
 
-mkdir $PAE_PREFIX/etc/rc.d
+mkdir $PREFIX/etc/rc.d
 
 ###############################################################################
 # Create the nginx rc script.
 
-cat > $PAE_PREFIX/etc/rc.d/nginx << EOF
+cat > $PREFIX/etc/rc.d/nginx << EOF
 #!/bin/sh
 #
 # Nginx daemon control script.
@@ -273,9 +269,9 @@ cat > $PAE_PREFIX/etc/rc.d/nginx << EOF
 # Written by Cherife Li <cherife@dotimes.com>.
 # Source: http://dotimes.com/slackbuilds/nginx/rc.nginx
 
-DAEMON=$PAE_PREFIX/sbin/nginx
-CONF=$PAE_PREFIX/etc/nginx/nginx.conf
-PID=$PAE_PREFIX/var/run/nginx.pid
+DAEMON=$PREFIX/sbin/nginx
+CONF=$PREFIX/etc/nginx/nginx.conf
+PID=$PREFIX/var/run/nginx.pid
 
 nginx_start() {
   # Sanity checks.
@@ -356,7 +352,7 @@ case "\$1" in
 esac
 EOF
 
-chmod 755 $PAE_PREFIX/etc/rc.d/nginx
+chmod 755 $PREFIX/etc/rc.d/nginx
 
 ###############################################################################
 # Before writing the configuration for nginx, let's build...
@@ -364,26 +360,27 @@ chmod 755 $PAE_PREFIX/etc/rc.d/nginx
 # Monit is a watchdog that manages processes. It makes sure that processes are
 # running and that those processes are behaving.
 
-cd $PAE_PREFIX/src
+cd $PREFIX/src
 wget http://www.tildeslash.com/monit/dist/monit-4.10.1.tar.gz
 tar xzvf monit-4.10.1.tar.gz
 cd monit-4.10.1
-./configure --prefix=$PAE_PREFIX
+./configure --prefix=$PREFIX
 make
 make install
 
 # Note: If configure fails on WebFaction's machines, try:
-# ./configure --prefix=$PAE_PREFIX --without-ssl
-# I can't get monit to configure successfully with ssl on Debian, but WebFaction
-# uses RHEL on its older machines and CentOS on its newer ones and I have been
-# successful at configuring monit with ssl on them.
+# ./configure --prefix=$PREFIX --without-ssl
+# I can't get monit to configure successfully with ssl on Debian, but
+# WebFaction uses RHEL on its older machines and CentOS on its newer ones. I
+# have not had any problems with them, so this note should not be of any
+# importance.
 
 ###############################################################################
 # Now let's create the nginx.conf file. It's based on the one created by Ezra
 # Zygmuntowicz. The user directive will not be enabled because the nginx
 # master process is not going to be run as root.
 
-cat > $PAE_PREFIX/etc/nginx/nginx.conf << EOF
+cat > $PREFIX/etc/nginx/nginx.conf << EOF
 # user and group to run as
 #user $USER $USER;
 
@@ -391,7 +388,7 @@ cat > $PAE_PREFIX/etc/nginx/nginx.conf << EOF
 worker_processes  6;
 
 # location of nginx pid file
-pid $PAE_PREFIX/var/run/nginx.pid;
+pid $PREFIX/var/run/nginx.pid;
 
 events {
   # 1024 worker connections is a good default value
@@ -400,7 +397,7 @@ events {
 
 http {
   # pull in mime types
-  include $PAE_PREFIX/etc/nginx/mime.types;
+  include $PREFIX/etc/nginx/mime.types;
 
   # set the default mime type
   default_type application/octet-stream;
@@ -411,10 +408,10 @@ http {
                   '"\$http_user_agent" "\$http_x_forwarded_for"';
 
   # location of server access log file
-  access_log $PAE_PREFIX/var/log/nginx/access.log main;
+  access_log $PREFIX/var/log/nginx/access.log main;
 
   # location of server error log file
-  error_log  $PAE_PREFIX/var/log/nginx/error.log  debug;
+  error_log  $PREFIX/var/log/nginx/error.log  debug;
 
   # turn sendfile off on Mac OS X
   sendfile on;
@@ -442,48 +439,48 @@ http {
 
   upstream thin {
     fair;
-    server unix:$PAE_PREFIX/var/tmp/thin.0.sock;
-    server unix:$PAE_PREFIX/var/tmp/thin.1.sock;
+    server unix:$PREFIX/var/tmp/thin.0.sock;
+    server unix:$PREFIX/var/tmp/thin.1.sock;
   }
 	
   # load vhost configuration files
-  include $PAE_PREFIX/etc/nginx/vhosts/*.conf;
+  include $PREFIX/etc/nginx/vhosts/*.conf;
 }
 EOF
 
 ###############################################################################
 # Create the vhost and certs directories
 
-mkdir $PAE_PREFIX/etc/nginx/vhosts
-mkdir $PAE_PREFIX/etc/nginx/certs
+mkdir $PREFIX/etc/nginx/vhosts
+mkdir $PREFIX/etc/nginx/certs
 
 ###############################################################################
 # Create a vhost conf file based on the information provided at the beginning
 # of this script. With vhosts not using ssl, you would normally assign a vhost
-# a name using the server_name directive. (Because of the one IP, one valid ssl
-# certificate nature of https, the server_name directive is practically
+# a name using the server_name directive. (Because of the one IP, one CA valid
+# ssl certificate nature of https, the server_name directive is practically
 # irrelevant.) That directive differentiates vhosts listening on a single port
 # by the domain name used to reach the server. The server_name doesn't come
 # into play unless you want to make such a distinction. WebFaction uses the
 # Apache equivalent to connect your domains and subdomains listening on port 80
 # (http) or 443 (https) to the port assigned to your rails application. Without
-# getting further into technicalities, you can uncomment and edit the
+# making this comment longer than it should be, you can uncomment and edit the
 # server_name directive to suit your situation, but in most situations it's not
-# necessary with WebFaction.
+# necessary under the WebFaction scheme.
 
-cat > $PAE_PREFIX/etc/nginx/vhosts/$APPNAME.conf << EOF
+cat > $PREFIX/etc/nginx/vhosts/$APP_NAME.conf << EOF
 server {
   # port to listen on (can also be IP:PORT)
-  listen $APPPORT;
+  listen $APP_PORT;
 
   # domain(s) this vhost serves requests for
   #server_name example.com www.example.com;
 
   # vhost specific access log
-  access_log $PAE_PREFIX/var/log/nginx/$APPNAME_access.log main;
+  access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
 
   # doc root
-  root $PAE_PREFIX/var/www/$APPNAME/public;
+  root $PREFIX/var/www/$APP_NAME/public;
 
   # set the max size for file uploads to 20Mb
   client_max_body_size 20M;
@@ -526,7 +523,7 @@ server {
 
   error_page 500 502 503 504 /500.html;
   location = /500.html {
-    root $PAE_PREFIX/var/www/$APPNAME/public;
+    root $PREFIX/var/www/$APP_NAME/public;
   }
 }
 EOF
@@ -537,26 +534,26 @@ EOF
 # and modify the conf according to your circumstances. It's named
 # https.conf.example so it won't be loaded when nginx is started. With
 # WebFaction, you probably aren't going to be doing https from nginx; it will
-# probably be configured from Apache, which is the "spearhead" server. Both
-# http and https requests will land on a single nginx http vhost. You'll
-# probably need to create a proxy header in the nginx conf file that
-# differentiates between http and https requests.
+# likely be done from Apache, which is the "spearhead" server. Both http and
+# https requests will land on a single nginx http vhost. You may need to create
+# a proxy header in the nginx conf file that differentiates between http and
+# https requests.
 
-cat > $PAE_PREFIX/etc/nginx/vhosts/https.conf.example << EOF
+cat > $PREFIX/etc/nginx/vhosts/https.conf.example << EOF
 server {
   # port to listen on (can also be IP:PORT)
   listen 443;
 
   # see http://rubyjudo.com/2006/11/2/nginx-ssl-rails
   ssl on;
-  ssl_certificate $PAE_PREFIX/etc/nginx/certs/server.crt;
-  ssl_certificate_key $PAE_PREFIX/etc/nginx/certs/server.key;
+  ssl_certificate $PREFIX/etc/nginx/certs/server.crt;
+  ssl_certificate_key $PREFIX/etc/nginx/certs/server.key;
 
   # vhost specific access log
-  access_log $PAE_PREFIX/var/log/nginx/https_access.log main;
+  access_log $PREFIX/var/log/nginx/https_access.log main;
 
   # doc root
-  root $PAE_PREFIX/var/www/$APPNAME/public;
+  root $PREFIX/var/www/$APP_NAME/public;
 
   # set the max size for file uploads to 20Mb
   client_max_body_size 20M;
@@ -600,7 +597,7 @@ server {
 
   error_page 500 502 503 504 /500.html;
   location = /500.html {
-    root $PAE_PREFIX/var/www/$APPNAME/public;
+    root $PREFIX/var/www/$APP_NAME/public;
   }
 }
 EOF
@@ -608,14 +605,14 @@ EOF
 ###############################################################################
 # Create the monit rc script (from http://quaddro.net/rcscripts/rc.monit)
 
-cat > $PAE_PREFIX/etc/rc.d/monit << EOF
+cat > $PREFIX/etc/rc.d/monit << EOF
 #!/bin/sh
 # Start/stop/restart monit
-# Important: monit must be set to be a daemon in $PAE_PREFIX/etc/monitrc
+# Important: monit must be set to be a daemon in $PREFIX/etc/monitrc
 #
 # You will probably want to start this towards the end.
 #
-MONIT=$PAE_PREFIX/bin/monit
+MONIT=$PREFIX/bin/monit
 
 monit_start() { 
   \$MONIT
@@ -649,42 +646,42 @@ case "\$1" in
 esac
 EOF
 
-chmod 755 $PAE_PREFIX/etc/rc.d/monit
+chmod 755 $PREFIX/etc/rc.d/monit
 
 ###############################################################################
 # Create the monitrc file. This comes from Ezra Zygmuntowicz.
-# *****This needs to be modified.*****
+# *****This should be modified.*****
 
-cat > $PAE_PREFIX/etc/monitrc << EOF
+cat > $PREFIX/etc/monitrc << EOF
 set daemon 30 
 #set logfile syslog facility log_daemon 
 #set mailserver smtp.example.com 
 #set mail-format {from:monit@example.com} 
 #set alert sysadmin@example.com only on { timeout, nonexist } 
-set httpd port $MONITPORT
+set httpd port $MONIT_PORT
   allow localhost 
-include $PAE_PREFIX/etc/monit/* 
+include $PREFIX/etc/monit/*.monitrc
 EOF
 
-chmod 700 $PAE_PREFIX/etc/monitrc
+chmod 700 $PREFIX/etc/monitrc
 
 ###############################################################################
 # Make the directory that holds the individual configuration files for monit.
 
-mkdir $PAE_PREFIX/etc/monit
+mkdir $PREFIX/etc/monit
 
 ###############################################################################
 # Create a monit configuration file for nginx. It's wise to have a failed port
 # line for each port nginx listens on. Feel free to tweak the numbers as you
 # see fit.
 
-cat > $PAE_PREFIX/etc/monit/nginx.monitrc << EOF
+cat > $PREFIX/etc/monit/nginx.monitrc << EOF
 check process nginx
-  with pidfile $PAE_PREFIX/var/run/nginx.pid
-  start program "$PAE_PREFIX/etc/rc.d/nginx start"
-  stop program "$PAE_PREFIX/etc/rc.d/nginx stop"
+  with pidfile $PREFIX/var/run/nginx.pid
+  start program "$PREFIX/etc/rc.d/nginx start"
+  stop program "$PREFIX/etc/rc.d/nginx stop"
   if totalmem > 25.0 MB for 5 cycles then restart
-  if failed port $APPPORT then restart
+  if failed port $APP_PORT then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
   group nginx
@@ -695,49 +692,48 @@ EOF
 # one that comes with the thin gem. It's located in the thin gem's examples
 # directory.
 
-cat > $PAE_PREFIX/etc/monit/blog.monitrc << EOF
-check process ${APPNAME}0
-  with pidfile $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.0.pid
-  start program = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin start -d -c $PAE_PREFIX/var/www/$APPNAME -e production -s 2 -S $PAE_PREFIX/var/www/$APPNAME/tmp/sockets/thin.sock -P $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.pid -o 0"
-  stop program  = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin stop -P $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.0.pid"
+cat > $PREFIX/etc/monit/blog.monitrc << EOF
+check process ${APP_NAME}0
+  with pidfile $PREFIX/var/www/$APP_NAME/tmp/pids/thin.0.pid
+  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.pid -o 0"
+  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.0.pid"
   if totalmem > 60.0 MB for 5 cycles then restart
-  if failed unixsocket $PAE_PREFIX/var/www/$APPNAME/tmp/sockets/thin.0.sock then restart
+  if failed unixsocket $PREFIX/var/www/$APP_NAME/tmp/sockets/thin.0.sock then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
-  group $APPNAME
+  group $APP_NAME
 
-check process ${APPNAME}1
-  with pidfile $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.1.pid
-  start program = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin start -d -c $PAE_PREFIX/var/www/$APPNAME -e production -s 2 -S $PAE_PREFIX/var/www/$APPNAME/tmp/sockets/thin.sock -P $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.pid -o 1"
-  stop program  = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin stop -P $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.1.pid"
+check process ${APP_NAME}1
+  with pidfile $PREFIX/var/www/$APP_NAME/tmp/pids/thin.1.pid
+  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.pid -o 1"
+  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.1.pid"
   if totalmem > 60.0 MB for 5 cycles then restart
-  if failed unixsocket $PAE_PREFIX/var/www/$APPNAME/tmp/sockets/thin.1.sock then restart
+  if failed unixsocket $PREFIX/var/www/$APP_NAME/tmp/sockets/thin.1.sock then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
-  group $APPNAME
+  group $APP_NAME
 EOF
 
 ###############################################################################
-# Create your main rc script, which will be run by cron on reboot
+# Create your main rc script, which will be run by cron on reboot.
 
-cat > $PAE_PREFIX/etc/rc.user << EOF
+cat > $PREFIX/etc/rc.user << EOF
 #!/bin/bash
 # User-level master startup script
 
-$PAE_PREFIX/etc/rc.d/nginx start
-$PAE_PREFIX/etc/rc.d/monit start
+$PREFIX/etc/rc.d/nginx start
+$PREFIX/etc/rc.d/monit start
 EOF
 
-chmod 755 $PAE_PREFIX/etc/rc.user
+chmod 755 $PREFIX/etc/rc.user
 
 ###############################################################################
 # You must add the following line to your crontab file (execute crontab -e):
 
-# @reboot $PAE_PREFIX/etc/rc.user
+# @reboot $PREFIX/etc/rc.user
 
 ###############################################################################
 # What you have to do manually after running this script:
-#   1. Edit the nginx vhosts to suit your circumstances.
-#   2. Generate ssl certificates for nginx (optional).
-#   3. Edit the monitrc scripts.
-#   4. Add the line "@reboot $PAE_PREFIX/etc/rc.user" to your crontab.
+#   1. Edit the nginx http vhost and generate ssl certificates (optional).
+#   2. Add the line "@reboot $PREFIX/etc/rc.user" to your crontab.
+#   3. Take a look at the nginx and monit conf files to educate yourself.
