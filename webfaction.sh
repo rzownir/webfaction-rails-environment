@@ -1,7 +1,16 @@
 ###############################################################################
+# Set the variables required by this script.
+
+export PAE_PREFIX=$HOME/apps
+export APPNAME=typo
+export APPPORT=4000
+export MONITPORT=4001
+
+###############################################################################
 # Write a clean ~/.bash_profile file. This will overwrite the one that already
 # exists, so a backup is made in case there's something important in the
-# original.
+# original. The EOF string limiter definition can be quoted with single or
+# double quotes at the beginning to prevent parameter substitution.
 
 cp ~/.bash_profile ~/.bash_profile.old
 
@@ -25,18 +34,16 @@ EOF
 # logs and webapps as well as hidden files and directories that are better off
 # separate. That way, if you aren't happy with your private application
 # environment, you could simply remove the apps directory and start over fresh.
-# The default private application environment is ~/apps. After defining
+# I personally use ~/apps for the private application environment. After defining
 # PAE_PREFIX, extend the PATH variable to include the paths of the applications
 # we're about to build. As with ~/.bash_profile, back up the ~/.bashrc file. If
 # you're wondering why the PATH is defined in ~/.bashrc and not ~/.bash_profile,
 # it's because ~/.bashrc alone is loaded when executing remote tasks without a
-# running terminal - or something along those lines. The EOF string limiter is
-# quoted (can be single or double) at the beginning to prevent parameter
-# substitution.
+# running terminal - or something along those lines.
 
 cp ~/.bashrc ~/.bashrc.old
 
-cat > ~/.bashrc << "EOF"
+cat > ~/.bashrc << EOF
 # .bashrc
 
 # Source global definitions
@@ -46,9 +53,7 @@ fi
 
 # User specific aliases and functions
 
-PAE_PREFIX=$HOME/apps
-
-PATH=$PAE_PREFIX/bin:$PAE_PREFIX/sbin:$PATH
+PATH=$PAE_PREFIX/bin:$PAE_PREFIX/sbin:\$PATH
 EOF
 
 ###############################################################################
@@ -312,8 +317,7 @@ nginx_reload() {
 }
 
 nginx_upgrade() {
-  echo -e "Upgrading to the new Nginx binary.\nMake sure the Nginx binary have been replaced 
-with new one\nor Nginx server modules were added/removed."
+  echo -e "Upgrading to the new Nginx binary.\nMake sure the Nginx binary have been replaced with new one\nor Nginx server modules were added/removed."
   kill -USR2 \`cat \$PID\`
   sleep 3
   kill -QUIT \`cat \$PID.oldbin\`
@@ -454,24 +458,32 @@ mkdir $PAE_PREFIX/etc/nginx/vhosts
 mkdir $PAE_PREFIX/etc/nginx/certs
 
 ###############################################################################
-# Create sample vhost conf files. You'll have to change the port in the listen
-# directive, the domain names in the server_name directive (although it isn't
-# even necessary in the case of WebFaction), and replace appname with the name
-# of your web application.
+# Create a vhost conf file based on the information provided at the beginning
+# of this script. With vhosts not using ssl, you would normally assign a vhost
+# a name using the server_name directive. (Because of the one IP, one valid ssl
+# certificate nature of https, the server_name directive is practically
+# irrelevant.) That directive differentiates vhosts listening on a single port
+# by the domain name used to reach the server. The server_name doesn't come
+# into play unless you want to make such a distinction. WebFaction uses the
+# Apache equivalent to connect your domains and subdomains listening on port 80
+# (http) or 443 (https) to the port assigned to your rails application. Without
+# getting further into technicalities, you can uncomment and edit the
+# server_name directive to suit your situation, but in most situations it's not
+# necessary with WebFaction.
 
-cat > $PAE_PREFIX/etc/nginx/vhosts/appname.conf << EOF
+cat > $PAE_PREFIX/etc/nginx/vhosts/$APPNAME.conf << EOF
 server {
   # port to listen on (can also be IP:PORT)
-  listen 4000;
+  listen $APPPORT;
 
   # domain(s) this vhost serves requests for
-  server_name example.com www.example.com;
+  #server_name example.com www.example.com;
 
   # vhost specific access log
-  access_log $PAE_PREFIX/var/log/nginx/appname_access.log main;
+  access_log $PAE_PREFIX/var/log/nginx/$APPNAME_access.log main;
 
   # doc root
-  root $PAE_PREFIX/var/www/appname/public;
+  root $PAE_PREFIX/var/www/$APPNAME/public;
 
   # set the max size for file uploads to 20Mb
   client_max_body_size 20M;
@@ -514,13 +526,13 @@ server {
 
   error_page 500 502 503 504 /500.html;
   location = /500.html {
-    root $PAE_PREFIX/var/www/appname/public;
+    root $PAE_PREFIX/var/www/$APPNAME/public;
   }
 }
 EOF
 
 ###############################################################################
-# Now create a sample https vhost file. You'll need to create SSL certificates
+# Create a sample https vhost file. You'll need to create SSL certificates
 # (see http://www.akadia.com/services/ssh_test_certificate.html for a howto)
 # and modify the conf according to your circumstances. It's named
 # https.conf.example so it won't be loaded when nginx is started. With
@@ -544,7 +556,7 @@ server {
   access_log $PAE_PREFIX/var/log/nginx/https_access.log main;
 
   # doc root
-  root $PAE_PREFIX/var/www/appname/public;
+  root $PAE_PREFIX/var/www/$APPNAME/public;
 
   # set the max size for file uploads to 20Mb
   client_max_body_size 20M;
@@ -588,7 +600,7 @@ server {
 
   error_page 500 502 503 504 /500.html;
   location = /500.html {
-    root $PAE_PREFIX/var/www/appname/public;
+    root $PAE_PREFIX/var/www/$APPNAME/public;
   }
 }
 EOF
@@ -649,7 +661,7 @@ set daemon 30
 #set mailserver smtp.example.com 
 #set mail-format {from:monit@example.com} 
 #set alert sysadmin@example.com only on { timeout, nonexist } 
-set httpd port 9111 
+set httpd port $MONITPORT
   allow localhost 
 include $PAE_PREFIX/etc/monit/* 
 EOF
@@ -672,7 +684,7 @@ check process nginx
   start program "$PAE_PREFIX/etc/rc.d/nginx start"
   stop program "$PAE_PREFIX/etc/rc.d/nginx stop"
   if totalmem > 25.0 MB for 5 cycles then restart
-  if failed port 4000 then restart
+  if failed port $APPPORT then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
   group nginx
@@ -684,25 +696,25 @@ EOF
 # directory.
 
 cat > $PAE_PREFIX/etc/monit/blog.monitrc << EOF
-check process appname0
-  with pidfile $PAE_PREFIX/var/www/appname/tmp/pids/thin.0.pid
-  start program = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin start -d -c $PAE_PREFIX/var/www/appname -e production -s 2 -S $PAE_PREFIX/var/www/appname/tmp/sockets/thin.sock -P $PAE_PREFIX/var/www/appname/tmp/pids/thin.pid -o 0"
-  stop program  = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin stop -P $PAE_PREFIX/var/www/appname/tmp/pids/thin.0.pid"
+check process ${APPNAME}0
+  with pidfile $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.0.pid
+  start program = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin start -d -c $PAE_PREFIX/var/www/$APPNAME -e production -s 2 -S $PAE_PREFIX/var/www/$APPNAME/tmp/sockets/thin.sock -P $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.pid -o 0"
+  stop program  = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin stop -P $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.0.pid"
   if totalmem > 60.0 MB for 5 cycles then restart
-  if failed unixsocket $PAE_PREFIX/var/www/appname/tmp/sockets/thin.0.sock then restart
+  if failed unixsocket $PAE_PREFIX/var/www/$APPNAME/tmp/sockets/thin.0.sock then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
-  group appname
+  group $APPNAME
 
-check process appname1
-  with pidfile $PAE_PREFIX/var/www/appname/tmp/pids/thin.1.pid
-  start program = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin start -d -c $PAE_PREFIX/var/www/appname -e production -s 2 -S $PAE_PREFIX/var/www/appname/tmp/sockets/thin.sock -P $PAE_PREFIX/var/www/appname/tmp/pids/thin.pid -o 1"
-  stop program  = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin stop -P $PAE_PREFIX/var/www/appname/tmp/pids/thin.1.pid"
+check process ${APPNAME}1
+  with pidfile $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.1.pid
+  start program = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin start -d -c $PAE_PREFIX/var/www/$APPNAME -e production -s 2 -S $PAE_PREFIX/var/www/$APPNAME/tmp/sockets/thin.sock -P $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.pid -o 1"
+  stop program  = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin stop -P $PAE_PREFIX/var/www/$APPNAME/tmp/pids/thin.1.pid"
   if totalmem > 60.0 MB for 5 cycles then restart
-  if failed unixsocket $PAE_PREFIX/var/www/appname/tmp/sockets/thin.1.sock then restart
+  if failed unixsocket $PAE_PREFIX/var/www/$APPNAME/tmp/sockets/thin.1.sock then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
-  group appname
+  group $APPNAME
 EOF
 
 ###############################################################################
