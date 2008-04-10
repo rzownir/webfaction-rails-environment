@@ -165,7 +165,7 @@ gem install rails merb mongrel mongrel_cluster thin capistrano \
 gem install eventmachine --source http://code.macournoyer.com
 
 ###############################################################################
-# 4. git 1.5.4.5
+# 4. git 1.5.5
 # Git is what scm should be. It is far better than subversion. In just a couple
 # of days it has proven itself invaluable to me. Most rails developers will be
 # switching from subversion to git in the coming months, if they haven't done
@@ -179,17 +179,17 @@ gem install eventmachine --source http://code.macournoyer.com
 # man pages from there.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.5.4.5.tar.gz
-tar xzvf git-1.5.4.5.tar.gz
-cd git-1.5.4.5
+wget http://www.kernel.org/pub/software/scm/git/git-1.5.5.tar.gz
+tar xzvf git-1.5.5.tar.gz
+cd git-1.5.5
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://www.kernel.org/pub/software/scm/git/git-manpages-1.5.4.5.tar.gz
-tar xzvf git-manpages-1.5.4.5.tar.gz
-rm git-manpages-1.5.4.5.tar.gz
+wget http://www.kernel.org/pub/software/scm/git/git-manpages-1.5.5.tar.gz
+tar xzvf git-manpages-1.5.5.tar.gz
+rm git-manpages-1.5.5.tar.gz
 
 ###############################################################################
 # 5. nginx 0.5.35
