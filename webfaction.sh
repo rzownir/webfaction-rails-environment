@@ -47,6 +47,7 @@ fi
 # User specific aliases and functions
 
 PAE_PREFIX=$HOME/apps
+
 PATH=$PAE_PREFIX/bin:$PAE_PREFIX/sbin:$PATH
 EOF
 
@@ -461,7 +462,7 @@ mkdir $PAE_PREFIX/etc/nginx/certs
 cat > $PAE_PREFIX/etc/nginx/vhosts/appname.conf << EOF
 server {
   # port to listen on (can also be IP:PORT)
-  listen 9000;
+  listen 4000;
 
   # domain(s) this vhost serves requests for
   server_name example.com www.example.com;
@@ -661,30 +662,47 @@ chmod 700 $PAE_PREFIX/etc/monitrc
 mkdir $PAE_PREFIX/etc/monit
 
 ###############################################################################
-# Create a sample monit configuration file. This is based on the one that comes
-# with the thin gem. It's located in the thin gem's examples directory.
-# *****This needs to be modified.*****
+# Create a monit configuration file for nginx. It's wise to have a failed port
+# line for each port nginx listens on. Feel free to tweak the numbers as you
+# see fit.
 
-cat > $PAE_PREFIX/etc/monit/blog.monitrc << "EOF"
-check process blog1
-  with pidfile /u/apps/blog/shared/pids/thin.1.pid
-  start program = "/usr/local/bin/ruby /usr/local/bin/thin start -d -e production -S /u/apps/blog/shared/pids/thin.1.sock -P tmp/pids/thin.1.pid -c /u/apps/blog/current"
-  stop program  = "/usr/local/bin/ruby /usr/local/bin/thin stop -P /u/apps/blog/shared/pids/thin.1.pid"
-  if totalmem > 90.0 MB for 5 cycles then restart
-  if failed unixsocket /u/apps/blog/shared/pids/thin.1.sock then restart
+cat > $PAE_PREFIX/etc/monit/nginx.monitrc << EOF
+check process nginx
+  with pidfile $PAE_PREFIX/var/run/nginx.pid
+  start program "$PAE_PREFIX/etc/rc.d/nginx start"
+  stop program "$PAE_PREFIX/etc/rc.d/nginx stop"
+  if totalmem > 25.0 MB for 5 cycles then restart
+  if failed port 4000 then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
-  group blog
+  group nginx
+EOF
 
-check process blog2
-  with pidfile /u/apps/blog/shared/pids/thin.2.pid
-  start program = "/usr/local/bin/ruby /usr/local/bin/thin start -d -e production -S /u/apps/blog/shared/pids/thin.2.sock -P tmp/pids/thin.2.pid -c /u/apps/blog/current"
-  stop program  = "/usr/local/bin/ruby /usr/local/bin/thin stop -P /u/apps/blog/shared/pids/thin.2.pid"
-  if totalmem > 90.0 MB for 5 cycles then restart
-  if failed unixsocket /u/apps/blog/shared/pids/thin.2.sock then restart
+###############################################################################
+# Create a monit configuration file for the thin cluster. This is based on the
+# one that comes with the thin gem. It's located in the thin gem's examples
+# directory.
+
+cat > $PAE_PREFIX/etc/monit/blog.monitrc << EOF
+check process appname0
+  with pidfile $PAE_PREFIX/var/www/appname/tmp/pids/thin.0.pid
+  start program = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin start -d -c $PAE_PREFIX/var/www/appname -e production -s 2 -S $PAE_PREFIX/var/www/appname/tmp/sockets/thin.sock -P $PAE_PREFIX/var/www/appname/tmp/pids/thin.pid -o 0"
+  stop program  = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin stop -P $PAE_PREFIX/var/www/appname/tmp/pids/thin.0.pid"
+  if totalmem > 60.0 MB for 5 cycles then restart
+  if failed unixsocket $PAE_PREFIX/var/www/appname/tmp/sockets/thin.0.sock then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
-  group blog
+  group appname
+
+check process appname1
+  with pidfile $PAE_PREFIX/var/www/appname/tmp/pids/thin.1.pid
+  start program = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin start -d -c $PAE_PREFIX/var/www/appname -e production -s 2 -S $PAE_PREFIX/var/www/appname/tmp/sockets/thin.sock -P $PAE_PREFIX/var/www/appname/tmp/pids/thin.pid -o 1"
+  stop program  = "$PAE_PREFIX/bin/ruby $PAE_PREFIX/bin/thin stop -P $PAE_PREFIX/var/www/appname/tmp/pids/thin.1.pid"
+  if totalmem > 60.0 MB for 5 cycles then restart
+  if failed unixsocket $PAE_PREFIX/var/www/appname/tmp/sockets/thin.1.sock then restart
+  if cpu usage > 95% for 3 cycles then restart
+  if 5 restarts within 5 cycles then timeout
+  group appname
 EOF
 
 ###############################################################################
@@ -709,5 +727,5 @@ chmod 755 $PAE_PREFIX/etc/rc.user
 # What you have to do manually after running this script:
 #   1. Edit the nginx vhosts to suit your circumstances.
 #   2. Generate ssl certificates for nginx (optional).
-#   3. Edit the two existing monitrc scripts and create one for nginx.
+#   3. Edit the monitrc scripts.
 #   4. Add the line "@reboot $PAE_PREFIX/etc/rc.user" to your crontab.
