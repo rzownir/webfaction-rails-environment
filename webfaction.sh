@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WebFaction Ruby on Rails Stack Builder
-# (c) Ronald M. Zownir - 20080408
+# (c) Ronald M. Zownir - 20080519, 20080520
 
 ###############################################################################
 # Before you run this script...
@@ -128,16 +128,16 @@ make install
 make install-doc
 
 ###############################################################################
-# 2. rubygems 1.0.1
+# 2. rubygems 1.1.1
 # Rubygems is the must have companion to ruby. By installing and using it in
 # your private application environment, you have total control over gems. You
 # can install, update, and uninstall whatever gems you want without having to
 # resort to freezing gems in your rails applications.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/29548/rubygems-1.0.1.tgz
-tar xzvf rubygems-1.0.1.tgz
-cd rubygems-1.0.1
+wget http://rubyforge.org/frs/download.php/35283/rubygems-1.1.1.tgz
+tar xzvf rubygems-1.1.1.tgz
+cd rubygems-1.1.1
 $PREFIX/bin/ruby setup.rb
 
 ###############################################################################
@@ -155,7 +155,7 @@ $PREFIX/bin/ruby setup.rb
 # god - watchdog and process manager
 # sqlite3-ruby - bindings to the sqlite3 dbms
 # mysql - bindings to the mysql dbms
-# typo - rails blogging application; not essential per say but nice to have
+# typo - rails blogging application; not essential but nice to have
 # Eventmachine is installed from a specific source because as of this writing,
 # the one that comes from rubyforge is 0.10.0. That version does not provide
 # unix socket listeners for thin.
@@ -165,7 +165,7 @@ gem install rails merb mongrel mongrel_cluster thin capistrano \
 gem install eventmachine --source http://code.macournoyer.com
 
 ###############################################################################
-# 4. git 1.5.5
+# 4. git 1.5.5.1
 # Git is what scm should be. It is far better than subversion. In just a couple
 # of days it has proven itself invaluable to me. Most rails developers will be
 # switching from subversion to git in the coming months, if they haven't done
@@ -179,20 +179,20 @@ gem install eventmachine --source http://code.macournoyer.com
 # man pages from there.
 
 cd $PREFIX/src
-wget http://www.kernel.org/pub/software/scm/git/git-1.5.5.tar.gz
-tar xzvf git-1.5.5.tar.gz
-cd git-1.5.5
+wget http://kernel.org/pub/software/scm/git/git-1.5.5.1.tar.gz
+tar xzvf git-1.5.5.1.tar.gz
+cd git-1.5.5.1
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://www.kernel.org/pub/software/scm/git/git-manpages-1.5.5.tar.gz
-tar xzvf git-manpages-1.5.5.tar.gz
-rm git-manpages-1.5.5.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.5.5.1.tar.gz
+tar xzvf git-manpages-1.5.5.1.tar.gz
+rm git-manpages-1.5.5.1.tar.gz
 
 ###############################################################################
-# 5. nginx 0.5.35
+# 5. nginx 0.6.31
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -218,16 +218,16 @@ rm git-manpages-1.5.5.tar.gz
 cd $PREFIX/src
 wget http://www.openssl.org/source/openssl-0.9.8g.tar.gz
 tar xzvf openssl-0.9.8g.tar.gz
-wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.6.tar.gz
-tar xzvf pcre-7.6.tar.gz
+wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.7.tar.gz
+tar xzvf pcre-7.7.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.5.35.tar.gz
-tar xzvf nginx-0.5.35.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.6.31.tar.gz
+tar xzvf nginx-0.6.31.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.5.35
+cd nginx-0.6.31
 ./configure \
---with-pcre=$PREFIX/src/pcre-7.6 \
+--with-pcre=$PREFIX/src/pcre-7.7 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \
 --with-openssl=$PREFIX/src/openssl-0.9.8g \
 --with-http_ssl_module \
@@ -759,5 +759,5 @@ $PREFIX/etc/rc.d/monit start
 # must add the following line to your crontab file (execute crontab -e),
 # replacing $PREFIX with its value:
 
-# This doesn't seem to be working on arch.
+# This doesn't seem to be working on ArchLinux testbed. (Fine on WebFaction.)
 # @reboot $PREFIX/etc/rc.d/monit start
