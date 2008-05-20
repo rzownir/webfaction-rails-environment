@@ -3,12 +3,14 @@
 The accompanying shell script will automatically build and configure your own Ruby on Rails/Merb stack. It was written with WebFaction users in mind, but is generally applicable apart from a few minor details. Basically, the directories $HOME/logs/user and $HOME/webapps/$APP_NAME should exist before the script is executed.
 
 Before executing the script, you need to edit four variable assignments at the beginning of the script:
+
 	* PREFIX - The installation path prefix.
 	* APP_NAME - The name of your rails app.
 	* APP_PORT - The port number assigned to the app specified above.
 	* MONIT_PORT - The port number to use for monit. Create a "Custom app (listening on port)" named "monit" from the WebFaction Control Panel and use the port assigned.
 
 The application environment consists of:
+
 	* Ruby 1.8.6 p114
 	* RubyGems 1.1.1
 	* Gems: rails, merb, mongrel, mongrel\_cluster, thin, capistrano, termios, ferret, acts\_as\_ferret, god, sqlite3-ruby, mysql, typo, and the latest eventmachine (to take advantage of unix sockets)
