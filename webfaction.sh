@@ -2,7 +2,7 @@
 
 # WebFaction Ruby on Rails Stack Builder
 # (c) 2008 - Ronald M. Zownir
-# Updated 2008-05-22
+# Updated 2008-06-02
 
 ###############################################################################
 # Edit these variables as instructed in the readme.
@@ -74,16 +74,16 @@ chmod 755 $PREFIX
 mkdir $PREFIX/src
 
 ###############################################################################
-# Ruby 1.8.6 patchlevel 114
+# Ruby 1.8.7
 # The good thing about having your own ruby install is that you can have the
 # most up to date version with security holes patched. You could also have
 # custom options enabled when the configure script is executed. I leave the
 # customization up to you, but it's fine as it is here.
 
 cd $PREFIX/src
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p114.tar.gz
-tar xzvf ruby-1.8.6-p114.tar.gz
-cd ruby-1.8.6-p114
+wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.7.tar.gz
+tar xzvf ruby-1.8.7.tar.gz
+cd ruby-1.8.7
 ./configure --prefix=$PREFIX
 make
 make install
