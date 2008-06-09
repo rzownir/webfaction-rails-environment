@@ -7,7 +7,7 @@ the directories `$HOME/logs/user` and `$HOME/webapps/$APP_NAME` are expected
 to exist before the script is executed.
 
 ## What's Provided
-* Ruby 1.8.7
+* Ruby Ruby 1.8.6 p114
 * RubyGems 1.1.1
 * Gems: rails, merb, mongrel, mongrel\_cluster, thin, capistrano, termios,
   ferret, acts\_as\_ferret, god, sqlite3-ruby, mysql, typo, and the latest
