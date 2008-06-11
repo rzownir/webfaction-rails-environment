@@ -7,12 +7,12 @@ the directories `$HOME/logs/user` and `$HOME/webapps/$APP_NAME` are expected
 to exist before the script is executed.
 
 ## What's Provided
-* Ruby Ruby 1.8.6 p114
+* Ruby 1.8.6 p114
 * RubyGems 1.1.1
 * Gems: rails, merb, mongrel, mongrel\_cluster, thin, capistrano, termios,
   ferret, acts\_as\_ferret, god, sqlite3-ruby, mysql, typo, and the latest
   eventmachine (to take advantage of unix sockets)
-* Git 1.5.5.1
+* Git 1.5.5.4
 * Nginx 0.6.31 (with nginx-upstream-fair module for fair load balancing)
 * Monit 4.10.1
 * Startup scripts and working default configuration files for monit and nginx

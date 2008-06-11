@@ -2,7 +2,7 @@
 
 # WebFaction Ruby on Rails Stack Builder
 # (c) 2008 - Ronald M. Zownir
-# Updated 2008-06-02
+# Updated 2008-06-11
 
 ###############################################################################
 # Edit these variables as instructed in the readme.
@@ -117,16 +117,14 @@ $PREFIX/bin/ruby setup.rb
 # sqlite3-ruby - bindings to the sqlite3 dbms
 # mysql - bindings to the mysql dbms
 # typo - rails blogging application
-# eventmachine - installed from a specific source because the one that comes
-#   from rubyforge is version 0.10.0; version >= 0.11.0 is required for thin's
-#   unix socket listener feature
+# eventmachine - installed from a specific source to get the very latest version
 
 gem install rails merb mongrel mongrel_cluster thin capistrano \
             termios ferret acts_as_ferret god sqlite3-ruby mysql typo
 gem install eventmachine --source http://code.macournoyer.com
 
 ###############################################################################
-# Git 1.5.5.1
+# Git 1.5.5.4
 # Git is a great source code management system. It's very simple and very
 # powerful. The rails community has strongly embraced git. If you haven't done
 # so already, it's time you did! Git provides compatibility with subversion, so
@@ -135,17 +133,17 @@ gem install eventmachine --source http://code.macournoyer.com
 # party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.5.5.1.tar.gz
-tar xzvf git-1.5.5.1.tar.gz
-cd git-1.5.5.1
+wget http://kernel.org/pub/software/scm/git/git-1.5.5.4.tar.gz
+tar xzvf git-1.5.5.4.tar.gz
+cd git-1.5.5.4
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.5.5.1.tar.gz
-tar xzvf git-manpages-1.5.5.1.tar.gz
-rm git-manpages-1.5.5.1.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.5.5.4.tar.gz
+tar xzvf git-manpages-1.5.5.4.tar.gz
+rm git-manpages-1.5.5.4.tar.gz
 
 ###############################################################################
 # Nginx 0.6.31
