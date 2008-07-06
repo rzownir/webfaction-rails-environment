@@ -47,7 +47,7 @@ if [ -f /etc/bashrc ]; then
 fi
 
 # User specific aliases and functions
-
+PREFIX=$PREFIX
 PATH=$PREFIX/bin:$PREFIX/sbin:\$PATH
 EOF
 
@@ -74,32 +74,32 @@ chmod 755 $PREFIX
 mkdir $PREFIX/src
 
 ###############################################################################
-# Ruby 1.8.6 p114
+# Ruby 1.8.6 p230
 # The good thing about having your own ruby install is that you can have the
 # most up to date version with security holes patched. You could also have
 # custom options enabled when the configure script is executed. I leave the
 # customization up to you, but it's fine as it is here.
 
 cd $PREFIX/src
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p114.tar.gz
-tar xzvf ruby-1.8.6-p114.tar.gz
-cd ruby-1.8.6-p114
+wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p230.tar.gz
+tar xzvf ruby-1.8.6-p230.tar.gz
+cd ruby-1.8.6-p230
 ./configure --prefix=$PREFIX
 make
 make install
 make install-doc
 
 ###############################################################################
-# RubyGems 1.1.1
+# RubyGems 1.2.0
 # By installing RubyGems in your private application environment, you have
 # total control over the gems you require. You can install, update, and
 # uninstall whatever gems you want without having to freeze gems in your rails
 # applications.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/35283/rubygems-1.1.1.tgz
-tar xzvf rubygems-1.1.1.tgz
-cd rubygems-1.1.1
+wget http://rubyforge.org/frs/download.php/38646/rubygems-1.2.0.tgz
+tar xzvf rubygems-1.2.0.tgz
+cd rubygems-1.2.0
 $PREFIX/bin/ruby setup.rb
 
 ###############################################################################
@@ -124,7 +124,7 @@ gem install rails merb mongrel mongrel_cluster thin capistrano \
 gem install eventmachine --source http://code.macournoyer.com
 
 ###############################################################################
-# Git 1.5.5.4
+# Git 1.5.6.2
 # Git is a great source code management system. It's very simple and very
 # powerful. The rails community has strongly embraced git. If you haven't done
 # so already, it's time you did! Git provides compatibility with subversion, so
@@ -133,17 +133,17 @@ gem install eventmachine --source http://code.macournoyer.com
 # party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.5.5.4.tar.gz
-tar xzvf git-1.5.5.4.tar.gz
-cd git-1.5.5.4
+wget http://kernel.org/pub/software/scm/git/git-1.5.6.2.tar.gz
+tar xzvf git-1.5.6.2.tar.gz
+cd git-1.5.6.2
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.5.5.4.tar.gz
-tar xzvf git-manpages-1.5.5.4.tar.gz
-rm git-manpages-1.5.5.4.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.5.6.2.tar.gz
+tar xzvf git-manpages-1.5.6.2.tar.gz
+rm git-manpages-1.5.6.2.tar.gz
 
 ###############################################################################
 # Nginx 0.6.31
