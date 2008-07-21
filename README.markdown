@@ -12,8 +12,8 @@ to exist before the script is executed.
 * Gems: rails, merb, mongrel, mongrel\_cluster, thin, capistrano, termios,
   ferret, acts\_as\_ferret, god, sqlite3-ruby, mysql, typo, and the latest
   eventmachine (to take advantage of unix sockets)
-* Git 1.5.6.2
-* Nginx 0.6.31 (with nginx-upstream-fair module for fair load balancing)
+* Git 1.5.6.4
+* Nginx 0.6.32 (with nginx-upstream-fair module for fair load balancing)
 * Monit 4.10.1
 * Startup scripts and working default configuration files for monit and nginx
 

@@ -124,7 +124,7 @@ gem install rails merb mongrel mongrel_cluster thin capistrano \
 gem install eventmachine --source http://code.macournoyer.com
 
 ###############################################################################
-# Git 1.5.6.2
+# Git 1.5.6.4
 # Git is a great source code management system. It's very simple and very
 # powerful. The rails community has strongly embraced git. If you haven't done
 # so already, it's time you did! Git provides compatibility with subversion, so
@@ -133,20 +133,20 @@ gem install eventmachine --source http://code.macournoyer.com
 # party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.5.6.2.tar.gz
-tar xzvf git-1.5.6.2.tar.gz
-cd git-1.5.6.2
+wget http://kernel.org/pub/software/scm/git/git-1.5.6.4.tar.gz
+tar xzvf git-1.5.6.4.tar.gz
+cd git-1.5.6.4
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.5.6.2.tar.gz
-tar xzvf git-manpages-1.5.6.2.tar.gz
-rm git-manpages-1.5.6.2.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.5.6.4.tar.gz
+tar xzvf git-manpages-1.5.6.4.tar.gz
+rm git-manpages-1.5.6.4.tar.gz
 
 ###############################################################################
-# Nginx 0.6.31
+# Nginx 0.6.32
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -170,20 +170,20 @@ rm git-manpages-1.5.6.2.tar.gz
 # bad idea to. Just make sure to include the nginx-upstream-fair module.
 
 cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-0.9.8g.tar.gz
-tar xzvf openssl-0.9.8g.tar.gz
+wget http://www.openssl.org/source/openssl-0.9.8h.tar.gz
+tar xzvf openssl-0.9.8h.tar.gz
 wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.7.tar.gz
 tar xzvf pcre-7.7.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.6.31.tar.gz
-tar xzvf nginx-0.6.31.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.6.32.tar.gz
+tar xzvf nginx-0.6.32.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.6.31
+cd nginx-0.6.32
 ./configure \
 --with-pcre=$PREFIX/src/pcre-7.7 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \
---with-openssl=$PREFIX/src/openssl-0.9.8g \
+--with-openssl=$PREFIX/src/openssl-0.9.8h \
 --with-http_ssl_module \
 --with-http_flv_module \
 --with-http_realip_module \
