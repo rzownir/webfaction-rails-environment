@@ -87,7 +87,7 @@ cd ruby-1.8.6-p230
 ./configure --prefix=$PREFIX
 make
 make install
-make install-doc
+#make install-doc # Documentation generation is ridiculously memory hungry!
 
 ###############################################################################
 # RubyGems 1.2.0
@@ -100,7 +100,7 @@ cd $PREFIX/src
 wget http://rubyforge.org/frs/download.php/38646/rubygems-1.2.0.tgz
 tar xzvf rubygems-1.2.0.tgz
 cd rubygems-1.2.0
-$PREFIX/bin/ruby setup.rb
+$PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
 
 ###############################################################################
 # Gems
@@ -109,7 +109,7 @@ $PREFIX/bin/ruby setup.rb
 # merb - another great ruby web framework that's worth a look see
 # mongrel, mongrel_cluster - the standard backend web server for rails apps
 # thin - mongrel's replacement: mongrel's http parser, built in clustering,
-#   unix socket listener support (with eventmachine >= 0.11.0)
+#   unix socket listener support
 # capistrano - for running remote tasks and automated deployment
 # termios - ruby implementation of the termios password masker
 # ferret, acts_as_ferret - full text search capability for rails models
@@ -117,11 +117,14 @@ $PREFIX/bin/ruby setup.rb
 # sqlite3-ruby - bindings to the sqlite3 dbms
 # mysql - bindings to the mysql dbms
 # typo - rails blogging application
-# eventmachine - installed from a specific source to get the very latest version
 
 gem install rails merb mongrel mongrel_cluster thin capistrano \
-            termios ferret acts_as_ferret god sqlite3-ruby mysql typo
-gem install eventmachine --source http://code.macournoyer.com
+            termios ferret acts_as_ferret god sqlite3-ruby mysql \
+            --no-rdoc --no-ri
+
+# The typo blog application currently requires rail version 2.0.2
+gem install rails -v '= 2.0.2' --no-rdoc --no-ri
+gem install typo --no-rdoc --no-ri
 
 ###############################################################################
 # Git 1.5.6.4

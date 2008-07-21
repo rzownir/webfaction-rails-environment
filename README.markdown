@@ -10,8 +10,7 @@ to exist before the script is executed.
 * Ruby 1.8.6 p230
 * RubyGems 1.2.0
 * Gems: rails, merb, mongrel, mongrel\_cluster, thin, capistrano, termios,
-  ferret, acts\_as\_ferret, god, sqlite3-ruby, mysql, typo, and the latest
-  eventmachine (to take advantage of unix sockets)
+  ferret, acts\_as\_ferret, god, sqlite3-ruby, mysql, and typo
 * Git 1.5.6.4
 * Nginx 0.6.32 (with nginx-upstream-fair module for fair load balancing)
 * Monit 4.10.1
