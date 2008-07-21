@@ -74,16 +74,26 @@ chmod 755 $PREFIX
 mkdir $PREFIX/src
 
 ###############################################################################
-# Ruby 1.8.6 p230
+# Ruby 1.8.6 (latest from the 1.8.6 subversion branch)
 # The good thing about having your own ruby install is that you can have the
 # most up to date version with security holes patched. You could also have
 # custom options enabled when the configure script is executed. I leave the
 # customization up to you, but it's fine as it is here.
 
 cd $PREFIX/src
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p230.tar.gz
-tar xzvf ruby-1.8.6-p230.tar.gz
-cd ruby-1.8.6-p230
+
+# The latest tarball release of Ruby in the 1.8.6 branch is ruby-1.8.6-p230.
+# However, there is a major bug with this release that causes segmentation
+# faults. We're going to build from the ruby_1_8_6 subversion branch, where
+# the bug has been eliminated.
+
+#wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p230.tar.gz
+#tar xzvf ruby-1.8.6-p230.tar.gz
+#cd ruby-1.8.6-p230
+
+svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_6/
+cd ruby_1_8_6
+autoconf
 ./configure --prefix=$PREFIX
 make
 make install
