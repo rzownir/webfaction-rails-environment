@@ -39,3 +39,21 @@ gem install memcached
 # May need to execute the following on some systems like ArchLinux. It's not
 # necessary on WebFaction machines, but it doesn't hurt to try.
 ldconfig $PREFIX/lib
+
+###############################################################################
+# Erlang R12B-3
+# There is a build error on Redhat/CentOS concerning ssl. The easy fix is to
+# disable ssl support in Erlang. If some can get Erlang to build with SSL on
+# WebFaction machines, PLEASE let me know how. I tried the solution on
+# http://www.erlang.org/pipermail/erlang-bugs/2007-December/000562.html, but
+# then got an error dealing with krb5. Maybe downloading and including the
+# kerberos 5 source would solve the problem, but I've been messing around with
+# with this too long.
+
+cd $PREFIX/src
+wget http://www.erlang.org/download/otp_src_R12B-3.tar.gz
+tar xzvf otp_src_R12B-3.tar.gz
+cd otp_src_R12B-3
+./configure --prefix=$PREFIX --without-ssl
+make
+make install
