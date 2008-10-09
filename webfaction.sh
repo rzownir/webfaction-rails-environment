@@ -2,10 +2,9 @@
 
 # WebFaction Ruby on Rails Stack Builder
 # (c) 2008 - Ronald M. Zownir
-# Updated 2008-06-11
 
 ###############################################################################
-# Edit these variables as instructed in the readme.
+# Edit these variables as instructed in the README.
 export PREFIX=$HOME/apps
 export APP_NAME=typo
 export APP_PORT=4000
@@ -48,7 +47,7 @@ fi
 
 # User specific aliases and functions
 PREFIX=$PREFIX
-PATH=$PREFIX/bin:$PREFIX/sbin:\$PATH
+PATH=\$PREFIX/bin:\$PREFIX/sbin:\$PATH
 EOF
 
 ###############################################################################
@@ -81,16 +80,6 @@ mkdir $PREFIX/src
 # customization up to you, but it's fine as it is here.
 
 cd $PREFIX/src
-
-# The latest tarball release of Ruby in the 1.8.6 branch is ruby-1.8.6-p230.
-# However, there is a major bug with this release that causes segmentation
-# faults. We're going to build from the ruby_1_8_6 subversion branch, where
-# the bug has been eliminated.
-
-#wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p230.tar.gz
-#tar xzvf ruby-1.8.6-p230.tar.gz
-#cd ruby-1.8.6-p230
-
 svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_6/
 cd ruby_1_8_6
 autoconf
@@ -100,25 +89,25 @@ make install
 #make install-doc # Documentation generation is ridiculously memory hungry!
 
 ###############################################################################
-# RubyGems 1.2.0
+# RubyGems 1.3.0
 # By installing RubyGems in your private application environment, you have
 # total control over the gems you require. You can install, update, and
 # uninstall whatever gems you want without having to freeze gems in your rails
 # applications.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/38646/rubygems-1.2.0.tgz
-tar xzvf rubygems-1.2.0.tgz
-cd rubygems-1.2.0
+wget http://rubyforge.org/frs/download.php/43985/rubygems-1.3.0.tgz
+tar xzvf rubygems-1.3.0.tgz
+cd rubygems-1.3.0
 $PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
 
 ###############################################################################
 # Gems
-# The following gems (along with their dependencies) come standard:
+# The following gems (along with their dependencies) will be installed:
 # rails - it's probably the reason you care to take a look at this script
-# merb - another great ruby web framework that's worth a look see
+# merb - another great ruby web framework
 # mongrel, mongrel_cluster - the standard backend web server for rails apps
-# thin - mongrel's replacement: mongrel's http parser, built in clustering,
+# thin - mongrel's successor: mongrel's http parser, built in clustering,
 #   unix socket listener support
 # capistrano - for running remote tasks and automated deployment
 # termios - ruby implementation of the termios password masker
@@ -137,26 +126,23 @@ gem install rails -v '= 2.0.2' --no-rdoc --no-ri
 gem install typo --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.5.6.4
-# Git is a great source code management system. It's very simple and very
-# powerful. The rails community has strongly embraced git. If you haven't done
-# so already, it's time you did! Git provides compatibility with subversion, so
-# it's easy to make the transition. Subversion is already installed on
-# WebFaction's machines, but git is not. Git will be used to retrieve the third
-# party nginx-upstream-fair module for nginx.
+# Git 1.6.0.2
+# Git is a great source code management system. Subversion is already installed
+# on WebFaction's machines, but git is not. Git will be used to retrieve the
+# third party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.5.6.4.tar.gz
-tar xzvf git-1.5.6.4.tar.gz
-cd git-1.5.6.4
+wget http://kernel.org/pub/software/scm/git/git-1.6.0.2.tar.gz
+tar xzvf git-1.6.0.2.tar.gz
+cd git-1.6.0.2
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.5.6.4.tar.gz
-tar xzvf git-manpages-1.5.6.4.tar.gz
-rm git-manpages-1.5.6.4.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.0.2.tar.gz
+tar xzvf git-manpages-1.6.0.2.tar.gz
+rm git-manpages-1.6.0.2.tar.gz
 
 ###############################################################################
 # Nginx 0.6.32
@@ -169,9 +155,6 @@ rm git-manpages-1.5.6.4.tar.gz
 # nginx-upstream-fair module, nginx can provide load balancing far more
 # effective than the round robin technique that comes standard. Enabling fair
 # load balancing is as easy as adding "fair;" to the block of upstream servers.
-# Early on, its lack of English documentation was nginx's only major downside,
-# but because it has become an integral part of the "rails stack", support from
-# the rails community is now quite substantial.
 #
 # Here we download the sources for openssl, pcre, zlib, and nginx and git clone
 # the nginx-upstream-fair module. Nginx will be compiled with the help of the
@@ -179,14 +162,14 @@ rm git-manpages-1.5.6.4.tar.gz
 # http_flv_module, and http_realip_module. The first provides support for
 # https, the second enables streaming flash videos, and the third allows you to
 # configure the real source IP if nginx isn't the spearhead frontend server.
-# You don't have to install the three aforementioned modules, but it's not a
-# bad idea to. Just make sure to include the nginx-upstream-fair module.
+# You don't have to install the three aforementioned modules, but it's a good
+# idea to. Just make sure to include the nginx-upstream-fair module.
 
 cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-0.9.8h.tar.gz
-tar xzvf openssl-0.9.8h.tar.gz
-wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.7.tar.gz
-tar xzvf pcre-7.7.tar.gz
+wget http://www.openssl.org/source/openssl-0.9.8i.tar.gz
+tar xzvf openssl-0.9.8i.tar.gz
+wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.8.tar.gz
+tar xzvf pcre-7.8.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
 wget http://sysoev.ru/nginx/nginx-0.6.32.tar.gz
@@ -194,9 +177,9 @@ tar xzvf nginx-0.6.32.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
 cd nginx-0.6.32
 ./configure \
---with-pcre=$PREFIX/src/pcre-7.7 \
+--with-pcre=$PREFIX/src/pcre-7.8 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \
---with-openssl=$PREFIX/src/openssl-0.9.8h \
+--with-openssl=$PREFIX/src/openssl-0.9.8i \
 --with-http_ssl_module \
 --with-http_flv_module \
 --with-http_realip_module \
@@ -245,7 +228,7 @@ ln -s $HOME/webapps $PREFIX/var/www
 ###############################################################################
 # Create a tmp directory in var. This is where I put the sockets for the thin
 # cluster. You might want to locate them in your rails application's
-# tmp/sockets directory, but you'll have to modify this script in several
+# tmp/sockets directory, but you'll have to modify this script in a few
 # locations.
 
 mkdir $PREFIX/var/tmp
@@ -258,11 +241,7 @@ mkdir $PREFIX/etc/rc.d
 
 ###############################################################################
 # Create the nginx rc script. I improved the second if structure in nginx_start
-# so that a zombie nginx pid file no longer poses a problem. There's no need
-# for a line in your crontab that removes zombie pid files before starting
-# monit. A single line in your crontab to start monit on reboot is all that is
-# necessary to get the rails stack up and running if the system has to be
-# rebooted.
+# so that an orphan nginx pid file does not pose a problem.
 
 cat > $PREFIX/etc/rc.d/nginx << EOF
 #!/bin/sh
@@ -363,7 +342,7 @@ chmod 755 $PREFIX/etc/rc.d/nginx
 # Before writing the configuration for nginx, let's build...
 # Monit 4.10.1
 # Monit is a watchdog that manages processes. It makes sure that processes are
-# running and that those processes are behaving themselves.
+# running and that they behave.
 
 cd $PREFIX/src
 wget http://www.tildeslash.com/monit/dist/monit-4.10.1.tar.gz
@@ -377,8 +356,7 @@ make install
 # ./configure --prefix=$PREFIX --without-ssl
 # I can't get monit to configure successfully with ssl on Debian, but
 # WebFaction uses RHEL on its older machines and CentOS on its newer ones.
-# Things should go without a hitch on WebFaction's machines; this note is
-# for internal testing purposes.
+# Things should go without a hitch on WebFaction's machines; end users ignore.
 
 ###############################################################################
 # Now let's create the nginx.conf file. It's based on the one created by Ezra
@@ -554,15 +532,14 @@ EOF
 
 ###############################################################################
 # Create a sample https vhost file. You'll need to create SSL certificates
-# (see http://www.akadia.com/services/ssh_test_certificate.html for a howto)
-# and modify the conf according to your circumstances. It's named
+# (see http://www.akadia.com/services/ssh_test_certificate.html on how) and
+# modify the conf according to your circumstances. It's named
 # https.conf.example so it won't be loaded when nginx is started. With
 # WebFaction, you probably aren't going to be doing https from nginx; it will
 # likely be done from Apache, which is the "spearhead" server. Both http and
 # https requests will land on a single nginx http vhost. You may need to create
 # a proxy header in the nginx conf file that differentiates between http and
-# https requests. If somebody could post a comment on my blog about how, that'd
-# be awesome.
+# https requests. If somebody could post a comment about how, that'd be great.
 
 cat > $PREFIX/etc/nginx/vhosts/https.conf.example << EOF
 server {
@@ -628,7 +605,9 @@ server {
 EOF
 
 ###############################################################################
-# Create the monit rc script (from http://quaddro.net/rcscripts/rc.monit)
+# Create the monit rc script (from http://quaddro.net/rcscripts/rc.monit). This
+# file is deprecated because it doesn't offer any real advantages. It will
+# remain for now, however.
 
 cat > $PREFIX/etc/rc.d/monit << EOF
 #!/bin/sh
@@ -676,7 +655,7 @@ chmod 755 $PREFIX/etc/rc.d/monit
 ###############################################################################
 # Create the monitrc file. This comes from Ezra Zygmuntowicz. I've commented
 # out all but the essential lines. This works perfectly fine, but it could
-# use some work.
+# use touch up.
 
 cat > $PREFIX/etc/monitrc << EOF
 set daemon 30 
@@ -714,7 +693,7 @@ check process nginx
 EOF
 
 ###############################################################################
-# Create a monit configuration file for the thin cluster. This is based on the
+# Create a monit configuration file for the thin servers. This is based on the
 # one that comes with the thin gem. It's located in the thin gem's examples
 # directory.
 
@@ -741,17 +720,39 @@ check process ${APP_NAME}1
 EOF
 
 ###############################################################################
-# Fire up monit, nginx, and the thin cluster!
+# Create the boot script. The script removes pid files from web app locations.
+# Thin will not start if it has orphaned pid files. The script will then start
+# monit which in turn will start up nginx and the thin servers. Be careful
+# running this script arbitrarily; you don't want to delete the pid files of
+# running processes!
 
-$PREFIX/etc/rc.d/monit start
+cat > $PREFIX/etc/rc.d/boot << EOF
+. \$HOME/.bash_profile
+find \$PREFIX/var/www/ -type f -name *.pid -print0 | xargs -0 rm
+monit
+EOF
+
+chmod 755 $PREFIX/etc/rc.d/boot
 
 ###############################################################################
-# We want to start monit up on reboot. All the daemons that monit watches over
-# will be started by monit, if they haven't been started by the time monit
-# starts. You must add the following line to your crontab file (execute crontab
-# -e), replacing $PREFIX with its value:
+# To run the boot script when the system reboots, an entry must be made to your
+# crontab file. A copy of your crontab is saved first. If the entry to be
+# prepended already appears in the original file, it is removed by grep before
+# it is saved. The crontab entry is prepended, the new crontab file is enacted,
+# and the two temporary files created are removed.
 
-# @reboot $PREFIX/etc/rc.d/monit start
+crontab -l | grep -v "@reboot $PREFIX/etc/rc.d/boot" > $PREFIX/var/tmp/oldcrontab
+cat > $PREFIX/var/tmp/newcrontab << EOF
+@reboot $PREFIX/etc/rc.d/boot
+EOF
+cat $PREFIX/var/tmp/oldcrontab >> $PREFIX/var/tmp/newcrontab
+crontab $PREFIX/var/tmp/newcrontab
+rm $PREFIX/var/tmp/oldcrontab $PREFIX/var/tmp/newcrontab
 
-# The above line isn't working on my ArchLinux testbed. It works fine on
-# WebFaction, so disregard this comment end users.
+# Note [to self]: crontab isn't working on my ArchLinux machine. The crontab
+# file works perfectly fine on WebFaction, so disregard this comment end users.
+
+###############################################################################
+# Fire up monit, nginx, and the thin servers!
+
+monit
