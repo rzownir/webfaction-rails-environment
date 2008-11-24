@@ -89,17 +89,20 @@ make install
 #make install-doc # Documentation generation is ridiculously memory hungry!
 
 ###############################################################################
-# RubyGems 1.3.0
+# RubyGems 1.3.1
 # By installing RubyGems in your private application environment, you have
 # total control over the gems you require. You can install, update, and
 # uninstall whatever gems you want without having to freeze gems in your rails
 # applications.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/43985/rubygems-1.3.0.tgz
-tar xzvf rubygems-1.3.0.tgz
-cd rubygems-1.3.0
+wget http://rubyforge.org/frs/download.php/45905/rubygems-1.3.1.tgz
+tar xzvf rubygems-1.3.1.tgz
+cd rubygems-1.3.1
 $PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
+
+# Make sure RubyGems is up to date
+$PREFIX/bin/gem update --system
 
 ###############################################################################
 # Gems
@@ -126,26 +129,26 @@ gem install rails -v '= 2.0.2' --no-rdoc --no-ri
 gem install typo --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.6.0.2
+# Git 1.6.0.4
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not. Git will be used to retrieve the
 # third party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.6.0.2.tar.gz
-tar xzvf git-1.6.0.2.tar.gz
-cd git-1.6.0.2
+wget http://kernel.org/pub/software/scm/git/git-1.6.0.4.tar.gz
+tar xzvf git-1.6.0.4.tar.gz
+cd git-1.6.0.4
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.0.2.tar.gz
-tar xzvf git-manpages-1.6.0.2.tar.gz
-rm git-manpages-1.6.0.2.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.0.4.tar.gz
+tar xzvf git-manpages-1.6.0.4.tar.gz
+rm git-manpages-1.6.0.4.tar.gz
 
 ###############################################################################
-# Nginx 0.6.32
+# Nginx 0.6.33
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -172,10 +175,10 @@ wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.8.tar.gz
 tar xzvf pcre-7.8.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.6.32.tar.gz
-tar xzvf nginx-0.6.32.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.6.33.tar.gz
+tar xzvf nginx-0.6.33.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.6.32
+cd nginx-0.6.33
 ./configure \
 --with-pcre=$PREFIX/src/pcre-7.8 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \
