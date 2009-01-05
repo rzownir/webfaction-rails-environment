@@ -73,15 +73,15 @@ chmod 755 $PREFIX
 mkdir $PREFIX/src
 
 ###############################################################################
-# Ruby 1.8.6 (latest from the 1.8.6 subversion branch)
+# Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
 # The good thing about having your own ruby install is that you can have the
 # most up to date version with security holes patched. You could also have
 # custom options enabled when the configure script is executed. I leave the
 # customization up to you, but it's fine as it is here.
 
 cd $PREFIX/src
-svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_6/
-cd ruby_1_8_6
+svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_7/
+cd ruby_1_8_7
 autoconf
 ./configure --prefix=$PREFIX
 make
@@ -129,26 +129,26 @@ gem install rails -v '= 2.0.2' --no-rdoc --no-ri
 gem install typo --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.6.0.4
+# Git 1.6.1
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not. Git will be used to retrieve the
 # third party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.6.0.4.tar.gz
-tar xzvf git-1.6.0.4.tar.gz
-cd git-1.6.0.4
+wget http://kernel.org/pub/software/scm/git/git-1.6.1.tar.gz
+tar xzvf git-1.6.1.tar.gz
+cd git-1.6.1
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.0.4.tar.gz
-tar xzvf git-manpages-1.6.0.4.tar.gz
-rm git-manpages-1.6.0.4.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.1.tar.gz
+tar xzvf git-manpages-1.6.1.tar.gz
+rm git-manpages-1.6.1.tar.gz
 
 ###############################################################################
-# Nginx 0.6.33
+# Nginx 0.6.34
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -175,10 +175,10 @@ wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.8.tar.gz
 tar xzvf pcre-7.8.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.6.33.tar.gz
-tar xzvf nginx-0.6.33.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.6.34.tar.gz
+tar xzvf nginx-0.6.34.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.6.33
+cd nginx-0.6.34
 ./configure \
 --with-pcre=$PREFIX/src/pcre-7.8 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \

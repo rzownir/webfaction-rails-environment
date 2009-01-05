@@ -6,25 +6,25 @@
 # Memcached
 
 cd $PREFIX/src
-wget http://monkey.org/~provos/libevent-1.4.5-stable.tar.gz
-tar xzvf libevent-1.4.5-stable.tar.gz
-cd libevent-1.4.5-stable
+wget http://monkey.org/~provos/libevent-1.4.9-stable.tar.gz
+tar xzvf libevent-1.4.9-stable.tar.gz
+cd libevent-1.4.9-stable
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://www.danga.com/memcached/dist/memcached-1.2.5.tar.gz
-tar xzvf memcached-1.2.5.tar.gz
-cd memcached-1.2.5
+wget http://www.danga.com/memcached/dist/memcached-1.2.6.tar.gz
+tar xzvf memcached-1.2.6.tar.gz
+cd memcached-1.2.6
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://download.tangent.org/libmemcached-0.21.tar.gz
-tar xzvf libmemcached-0.21.tar.gz
-cd libmemcached-0.21
+wget http://download.tangent.org/libmemcached-0.25.tar.gz
+tar xzvf libmemcached-0.25.tar.gz
+cd libmemcached-0.25
 ./configure --prefix=$PREFIX
 make
 make install
@@ -41,7 +41,7 @@ gem install memcached
 ldconfig $PREFIX/lib
 
 ###############################################################################
-# Erlang R12B-3
+# Erlang R12B-5
 # There is a build error on Redhat/CentOS concerning ssl. The easy fix is to
 # disable ssl support in Erlang. If some can get Erlang to build with SSL on
 # WebFaction machines, PLEASE let me know how. I tried the solution on
@@ -51,9 +51,9 @@ ldconfig $PREFIX/lib
 # with this too long.
 
 cd $PREFIX/src
-wget http://www.erlang.org/download/otp_src_R12B-3.tar.gz
-tar xzvf otp_src_R12B-3.tar.gz
-cd otp_src_R12B-3
+wget http://erlang.org/download/otp_src_R12B-5.tar.gz
+tar xzvf otp_src_R12B-5.tar.gz
+cd otp_src_R12B-5
 ./configure --prefix=$PREFIX --without-ssl
 make
 make install
