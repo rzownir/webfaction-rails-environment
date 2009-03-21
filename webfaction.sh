@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WebFaction Ruby on Rails Stack Builder
-# (c) 2008 - Ronald M. Zownir
+# (c) 2008-2009 - Ronald M. Zownir
 
 ###############################################################################
 # Edit these variables as instructed in the README.
@@ -124,31 +124,31 @@ gem install rails merb mongrel mongrel_cluster thin capistrano \
             termios ferret acts_as_ferret god sqlite3-ruby mysql \
             --no-rdoc --no-ri
 
-# The typo blog application currently requires rail version 2.0.2
-gem install rails -v '= 2.0.2' --no-rdoc --no-ri
+# The typo blog application currently requires rails version 2.2.2
+gem install rails -v '= 2.2.2' --no-rdoc --no-ri
 gem install typo --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.6.1
+# Git 1.6.2.1
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not. Git will be used to retrieve the
 # third party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.6.1.tar.gz
-tar xzvf git-1.6.1.tar.gz
-cd git-1.6.1
+wget http://kernel.org/pub/software/scm/git/git-1.6.2.1.tar.gz
+tar xzvf git-1.6.2.1.tar.gz
+cd git-1.6.2.1
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.1.tar.gz
-tar xzvf git-manpages-1.6.1.tar.gz
-rm git-manpages-1.6.1.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.2.1.tar.gz
+tar xzvf git-manpages-1.6.2.1.tar.gz
+rm git-manpages-1.6.2.1.tar.gz
 
 ###############################################################################
-# Nginx 0.6.34
+# Nginx 0.6.35
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -169,20 +169,20 @@ rm git-manpages-1.6.1.tar.gz
 # idea to. Just make sure to include the nginx-upstream-fair module.
 
 cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-0.9.8i.tar.gz
-tar xzvf openssl-0.9.8i.tar.gz
+wget http://www.openssl.org/source/openssl-0.9.8j.tar.gz
+tar xzvf openssl-0.9.8j.tar.gz
 wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.8.tar.gz
 tar xzvf pcre-7.8.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.6.34.tar.gz
-tar xzvf nginx-0.6.34.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.6.35.tar.gz
+tar xzvf nginx-0.6.35.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.6.34
+cd nginx-0.6.35
 ./configure \
 --with-pcre=$PREFIX/src/pcre-7.8 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \
---with-openssl=$PREFIX/src/openssl-0.9.8i \
+--with-openssl=$PREFIX/src/openssl-0.9.8j \
 --with-http_ssl_module \
 --with-http_flv_module \
 --with-http_realip_module \

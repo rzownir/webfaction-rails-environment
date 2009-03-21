@@ -11,8 +11,8 @@ before running the script.
 * RubyGems 1.3.1 (plus subsequent updates, if any)
 * Gems: rails, merb, mongrel, mongrel\_cluster, thin, capistrano, termios,
   ferret, acts\_as\_ferret, god, sqlite3-ruby, mysql, and typo
-* Git 1.6.1
-* nginx 0.6.34 (with nginx-upstream-fair module for fair load balancing)
+* Git 1.6.2.1
+* nginx 0.6.35 (with nginx-upstream-fair module for fair load balancing)
 * Monit 4.10.1
 * Startup scripts and working default configuration files for monit and nginx
 

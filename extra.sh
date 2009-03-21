@@ -22,9 +22,9 @@ make
 make install
 
 cd $PREFIX/src
-wget http://download.tangent.org/libmemcached-0.25.tar.gz
-tar xzvf libmemcached-0.25.tar.gz
-cd libmemcached-0.25
+wget http://download.tangent.org/libmemcached-0.26.tar.gz
+tar xzvf libmemcached-0.26.tar.gz
+cd libmemcached-0.26
 ./configure --prefix=$PREFIX
 make
 make install
@@ -51,9 +51,9 @@ ldconfig $PREFIX/lib
 # with this too long.
 
 cd $PREFIX/src
-wget http://erlang.org/download/otp_src_R12B-5.tar.gz
-tar xzvf otp_src_R12B-5.tar.gz
-cd otp_src_R12B-5
+wget http://erlang.org/download/otp_src_R13A.tar.gz
+tar xzvf otp_src_R13A.tar.gz
+cd otp_src_R13A
 ./configure --prefix=$PREFIX --without-ssl
 make
 make install
