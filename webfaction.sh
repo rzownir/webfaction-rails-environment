@@ -6,7 +6,7 @@
 ###############################################################################
 # Edit these variables as instructed in the README.
 export PREFIX=$HOME/apps
-export APP_NAME=typo
+export APP_NAME=blog
 export APP_PORT=4000
 export MONIT_PORT=4002
 
@@ -108,21 +108,17 @@ $PREFIX/bin/gem update --system
 # Gems
 # The following gems (along with their dependencies) will be installed:
 # rails - it's probably the reason you care to take a look at this script
-# merb - another great ruby web framework
-# mongrel, mongrel_cluster - the standard backend web server for rails apps
 # thin - mongrel's successor: mongrel's http parser, built in clustering,
 #   unix socket listener support
 # capistrano - for running remote tasks and automated deployment
 # termios - ruby implementation of the termios password masker
-# ferret, acts_as_ferret - full text search capability for rails models
 # god - watchdog and process manager that can be used instead of monit
 # sqlite3-ruby - bindings to the sqlite3 dbms
 # mysql - bindings to the mysql dbms
 # typo - rails blogging application
 
-gem install rails merb mongrel mongrel_cluster thin capistrano \
-            termios ferret acts_as_ferret god sqlite3-ruby mysql \
-            --no-rdoc --no-ri
+gem install rails thin capistrano termios god sqlite3-ruby --no-rdoc --no-ri
+gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 
 # The typo blog application currently requires rails version 2.2.2
 gem install rails -v '= 2.2.2' --no-rdoc --no-ri

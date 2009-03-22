@@ -1,6 +1,6 @@
 # WebFaction Rails Stack
 The accompanying shell script will automatically build and configure your own
-private **Ruby on Rails/Merb** stack. It was written with
+private **Ruby on Rails** stack. It was written with
 **[WebFaction](http://www.webfaction.com/?affiliate=rzownir)** users in
 mind, but is more or less generic aside from a few minor details. Essentially,
 the directories `$HOME/logs/user` and `$HOME/webapps/$APP_NAME` must exist
@@ -9,8 +9,7 @@ before running the script.
 ## What's Provided
 * Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
 * RubyGems 1.3.1 (plus subsequent updates, if any)
-* Gems: rails, merb, mongrel, mongrel\_cluster, thin, capistrano, termios,
-  ferret, acts\_as\_ferret, god, sqlite3-ruby, mysql, and typo
+* Gems: rails, thin, capistrano, termios, god, sqlite3-ruby, mysql, and typo
 * Git 1.6.2.1
 * nginx 0.6.35 (with nginx-upstream-fair module for fair load balancing)
 * Monit 4.10.1
@@ -32,7 +31,7 @@ before running the script.
        and thin processes, execute `rm -rf $HOME/apps` and start over fresh.
      * `APP_NAME` is the name of the app created in step one. The path
        `$HOME/webapps/$APP_NAME` should exist and contain at least a skeleton
-       app. The default value for `APP_NAME` is `typo`.
+       app. The default value for `APP_NAME` is `blog`.
      * `APP_PORT` is the port WebFaction assigned to the app created in step
        one. The default value is `4000`.
      * `MONIT_PORT` is the port WebFaction assigned to the app created in step
