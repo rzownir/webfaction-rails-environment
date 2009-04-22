@@ -6,13 +6,33 @@ mind, but is more or less generic aside from a few minor details. Essentially,
 the directories `$HOME/logs/user` and `$HOME/webapps/$APP_NAME` must exist
 before running the script.
 
+There are now two stack scripts, the classic one, webfaction.sh, and a new one,
+webfaction-alt.sh. The classic one is a monit/nginx/ruby 1.8.7 MRI/thin stack
+and the new one is an nginx/ruby enterprise edition 1.8.6/passenger stack. The
+classic script includes passenger and the passenger nginx module in case you
+want to give it a whirl. Now that passenger works with nginx, it has become the
+clear choice. It is certainly simpler. However, although the new stack uses less
+physical memory, the rss is often higher. This is because of multiple counting.
+Depending on how WebFaction meters memory usage, this could be a practical
+downside.
+
+To compare your total rss vs your total private dirty rss (physical memory usage) run these commands:
+
+	ps -u $USER -o rss | grep -v peruser | awk '{sum+=$1} END {printf("\n%.0fMB total RSS\n", sum/1024)}'
+	(ps -u $USER -o pid | awk '{ print "grep Private_Dirty /proc/"$1"/smaps" }' | sh | awk '{ sum += $2 } END { printf("%.0fMB total Private Dirty RSS\n\n", sum/1024) }') 2>/dev/null
+
+You will see that your actual physical memory usage is much smaller than what rss
+reports.
+
+# Classic Script
 ## What's Provided
 * Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
-* RubyGems 1.3.1 (plus subsequent updates, if any)
-* Gems: rails, thin, capistrano, termios, god, sqlite3-ruby, mysql, and typo
-* Git 1.6.2.1
-* nginx 0.6.35 (with nginx-upstream-fair module for fair load balancing)
-* Monit 4.10.1
+* Latest RubyGems
+* Gems: rails, thin, capistrano, termios, god, sqlite3-ruby, mysql, typo, and
+  passenger
+* Git 1.6.2.4
+* nginx 0.6.36 (with nginx-upstream-fair module for fair load balancing and passenger module)
+* Monit 5.0
 * Startup scripts and working default configuration files for monit and nginx
 
 ## Before Running the Script
@@ -52,5 +72,18 @@ There are a couple of optional things you should do:
 2. Generate ssl certificates and create an nginx https vhost following my
    example file if you have a dedicated IP address for https traffic.
 
-## Feedback
-Please leave a comment!
+# New Script
+## What's Provided
+* Ruby Enterprise Edition 1.8.6 - 20090201
+* Latest RubyGems
+* Gems: rack, rails, mysql, sqlite3-ruby, passenger, thin, capistrano, termios
+* Git 1.6.2.4
+* nginx 0.6.36 (with nginx-upstream-fair module for fair load balancing and passenger module)
+* Startup scripts and working default configuration files for nginx
+
+## Before Running the Script
+Follow Steps 1 and 3 for the classic script, and ignore monit related
+information in Step 3.
+
+# Feedback
+Please leave a blog comment!

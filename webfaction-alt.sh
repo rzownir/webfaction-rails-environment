@@ -8,7 +8,6 @@
 export PREFIX=$HOME/apps
 export APP_NAME=blog
 export APP_PORT=4000
-export MONIT_PORT=4002
 
 ###############################################################################
 # Back up $HOME/.bash_profile and write a clean file. The string limiter
@@ -74,65 +73,35 @@ chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
 ###############################################################################
-# Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
-# The good thing about having your own ruby install is that you can have the
-# most up to date version with security holes patched. You could also have
-# custom options enabled when the configure script is executed. I leave the
-# customization up to you, but it's fine as it is here.
+# Ruby Enterprise Edition 1.8.6 - 20090201
+# Reduces memory consumption of rails apps by up to 33% when used with Passenger.
 
 cd $PREFIX/src
-svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_7/
-cd ruby_1_8_7
-autoconf
-./configure --prefix=$PREFIX
-make
-make install
-#make install-doc # Documentation generation is ridiculously memory hungry!
-
-###############################################################################
-# RubyGems 1.3.2
-# By installing RubyGems in your private application environment, you have
-# total control over the gems you require. You can install, update, and
-# uninstall whatever gems you want without having to freeze gems in your rails
-# applications.
-
-cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/55066/rubygems-1.3.2.tgz
-tar xzvf rubygems-1.3.2.tgz
-cd rubygems-1.3.2
-$PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
+wget http://rubyforge.org/frs/download.php/51100/ruby-enterprise-1.8.6-20090201.tar.gz
+tar xzvf ruby-enterprise-1.8.6-20090201.tar.gz
+cd ruby-enterprise-1.8.6-20090201
+./installer -a $PREFIX
 
 # Make sure RubyGems is up to date
 $PREFIX/bin/gem update --system
 
+# Common gems are installed with Ruby Enterprise Edition include:
+# fastthread, mysql, passenger, rack, rails, rake, rubygems-update, sqlite3-ruby
+
 ###############################################################################
-# Gems
+# Additional Gems
 # The following gems (along with their dependencies) will be installed:
-# rails - it's probably the reason you care to take a look at this script
 # thin - mongrel's successor: mongrel's http parser, built in clustering,
 #   unix socket listener support
 # capistrano - for running remote tasks and automated deployment
 # termios - ruby implementation of the termios password masker
-# god - watchdog and process manager that can be used instead of monit
-# sqlite3-ruby - bindings to the sqlite3 dbms
-# mysql - bindings to the mysql dbms
-# typo - rails blogging application
-# passenger - now for nginx!
 
-gem install rails thin capistrano termios god sqlite3-ruby --no-rdoc --no-ri
-gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
-
-# The typo blog application currently requires rails version 2.2.2
-gem install rails -v '= 2.2.2' --no-rdoc --no-ri
-gem install typo --no-rdoc --no-ri
-
-gem install passenger --no-rdoc --no-ri
+gem install thin capistrano termios --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.6.2.1
+# Git 1.6.2.4
 # Git is a great source code management system. Subversion is already installed
-# on WebFaction's machines, but git is not. Git will be used to retrieve the
-# third party nginx-upstream-fair module for nginx.
+# on WebFaction's machines, but git is not.
 
 cd $PREFIX/src
 wget http://kernel.org/pub/software/scm/git/git-1.6.2.4.tar.gz
@@ -149,24 +118,13 @@ rm git-manpages-1.6.2.4.tar.gz
 
 ###############################################################################
 # Nginx 0.6.36
-# For good reason, the most popular frontend webserver for rails applications
-# is nginx. It's easy to configure, requires very little memory even under
-# heavy load, fast at serving static pages created with rails page caching, and
-# a capable reverse proxy and load balancer. It's a nice all-in-one solution
-# that just works! It's upstream directive supports backend servers listening
-# on unix socket connections in addition to TCP ports. When built with the
-# nginx-upstream-fair module, nginx can provide load balancing far more
-# effective than the round robin technique that comes standard. Enabling fair
-# load balancing is as easy as adding "fair;" to the block of upstream servers.
-#
 # Here we download the sources for openssl, pcre, zlib, and nginx and git clone
 # the nginx-upstream-fair module. Nginx will be compiled with the help of the
-# other sources. Three other modules will be built into nginx: http_ssl_module,
-# http_flv_module, and http_realip_module. The first provides support for
-# https, the second enables streaming flash videos, and the third allows you to
-# configure the real source IP if nginx isn't the spearhead frontend server.
-# You don't have to install the three aforementioned modules, but it's a good
-# idea to. Just make sure to include the nginx-upstream-fair module.
+# other sources. Four other modules will be built into nginx: http_ssl_module,
+# http_flv_module, http_realip_module, and passenger. The first provides support
+# for https, the second enables streaming flash videos, the third allows you to
+# configure the real source IP if nginx isn't the spearhead frontend server, and
+# the last is the module that hooks up to passenger.
 
 export PASSENGER_ROOT=`passenger-config --root`
 
@@ -232,10 +190,7 @@ mkdir -p $PREFIX/var/spool/nginx
 ln -s $HOME/webapps $PREFIX/var/www
 
 ###############################################################################
-# Create a tmp directory in var. This is where I put the sockets for the thin
-# cluster. You might want to locate them in your rails application's
-# tmp/sockets directory, but you'll have to modify this script in a few
-# locations.
+# Create a tmp directory in var. This is where I would put sockets.
 
 mkdir $PREFIX/var/tmp
 chmod 777 $PREFIX/var/tmp
@@ -345,26 +300,6 @@ EOF
 chmod 755 $PREFIX/etc/rc.d/nginx
 
 ###############################################################################
-# Before writing the configuration for nginx, let's build...
-# Monit 5.0
-# Monit is a watchdog that manages processes. It makes sure that processes are
-# running and that they behave.
-
-cd $PREFIX/src
-wget http://mmonit.com/monit/dist/monit-5.0.tar.gz
-tar xzvf monit-5.0.tar.gz
-cd monit-5.0
-./configure --prefix=$PREFIX
-make
-make install
-
-# Note [to self]: If configure fails, try:
-# ./configure --prefix=$PREFIX --without-ssl
-# I can't get monit to configure successfully with ssl on Debian, but
-# WebFaction uses RHEL on its older machines and CentOS on its newer ones.
-# Things should go without a hitch on WebFaction's machines; end users ignore.
-
-###############################################################################
 # Now let's create the nginx.conf file. It's based on the one created by Ezra
 # Zygmuntowicz. The user directive is commented out because the nginx
 # master process is not run by root. Therefore the worker processes must run by
@@ -375,7 +310,7 @@ cat > $PREFIX/etc/nginx/nginx.conf << EOF
 #user $USER $USER;
 
 # number of nginx workers
-worker_processes  6;
+worker_processes  4;
 
 # location of nginx pid file
 pid $PREFIX/var/run/nginx.pid;
@@ -421,21 +356,6 @@ http {
   gzip_proxied any;
   gzip_types text/plain text/html text/css application/x-javascript text/xml
              application/xml application/xml+rss text/javascript;
-
-  # reverse proxy clusters
-  # upstream mongrel {
-  #   # fair load balancing requires the nginx-upstream-fair module
-  #   fair;
-  #   server 127.0.0.1:5000;
-  #   server 127.0.0.1:5001;
-  #   server 127.0.0.1:5002;
-  # }
-
-  upstream thin {
-    fair;
-    server unix:$PREFIX/var/tmp/thin.0.sock;
-    server unix:$PREFIX/var/tmp/thin.1.sock;
-  }
 	
   # load vhost configuration files
   include $PREFIX/etc/nginx/vhosts/*.conf;
@@ -472,7 +392,7 @@ mkdir $PREFIX/etc/nginx/certs
 # server {
 #   listen 4321;
 #   server_name example.net www.example.net;
-#   rewrite ^ http://example.com$uri permanent;
+#   rewrite ^ $scheme://example.com$uri permanent;
 # }
 # 
 # server {
@@ -482,61 +402,13 @@ mkdir $PREFIX/etc/nginx/certs
 
 cat > $PREFIX/etc/nginx/vhosts/$APP_NAME.conf << EOF
 server {
-  # port to listen on (can also be IP:PORT)
-  listen $APP_PORT;
-
-  # domain(s) this vhost serves requests for
-  #server_name example.com www.example.com;
-
-  # vhost specific access log
-  access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
-
-  # doc root
+	listen $APP_PORT;
+  server_name example.com;
   root $PREFIX/var/www/$APP_NAME/public;
+	passenger_enabled on;
 
-  # set the max size for file uploads to 20Mb
-  client_max_body_size 20M;
-
-  # with capistrano's disable web task, rewrite all requests to maintenance.html
-  if (-f \$document_root/system/maintenance.html) {
-    rewrite  ^(.*)\$  /system/maintenance.html last;
-    break;
-  }
-
-  location / {
-    # set headers for passing the request to the backend
-    proxy_set_header  X-Real-IP  \$remote_addr;
-    proxy_set_header  X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header Host \$http_host;
-    proxy_redirect false;
-    proxy_max_temp_file_size 0;
-
-    # serve the static file if it exists
-    if (-f \$request_filename) { 
-      break; 
-    }
-
-    # serve static directory index if it exists
-    if (-f \$request_filename/index.html) {
-      rewrite (.*) \$1/index.html break;
-    }
-
-    # necessary rule for rails page caching
-    if (-f \$request_filename.html) {
-      rewrite (.*) \$1.html break;
-    }
-
-    # set necessary headers and pass the request to the upstream cluster
-    if (!-f \$request_filename) {
-      proxy_pass http://thin;
-      break;
-    }
-  }
-
-  error_page 500 502 503 504 /500.html;
-  location = /500.html {
-    root $PREFIX/var/www/$APP_NAME/public;
-  }
+	# vhost specific access log
+  access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
 }
 EOF
 
@@ -544,202 +416,33 @@ EOF
 # Create a sample https vhost file. You'll need to create SSL certificates
 # (see http://www.akadia.com/services/ssh_test_certificate.html on how) and
 # modify the conf according to your circumstances. It's named
-# https.conf.example so it won't be loaded when nginx is started. With
-# WebFaction, you probably aren't going to be doing https from nginx; it will
-# likely be done from Apache, which is the "spearhead" server. Both http and
-# https requests will land on a single nginx http vhost. You may need to create
-# a proxy header in the nginx conf file that differentiates between http and
-# https requests. If somebody could post a comment about how, that'd be great.
+# https.conf.example so it won't be loaded when nginx is started.
 
 cat > $PREFIX/etc/nginx/vhosts/https.conf.example << EOF
 server {
-  # port to listen on (can also be IP:PORT)
   listen 443;
+  root $PREFIX/var/www/$APP_NAME/public;
+	passenger_enabled on;
+
+  # vhost specific access log
+  access_log $PREFIX/var/log/nginx/https_access.log main;
 
   # see http://rubyjudo.com/2006/11/2/nginx-ssl-rails
   ssl on;
   ssl_certificate $PREFIX/etc/nginx/certs/server.crt;
   ssl_certificate_key $PREFIX/etc/nginx/certs/server.key;
-
-  # vhost specific access log
-  access_log $PREFIX/var/log/nginx/https_access.log main;
-
-  # doc root
-  root $PREFIX/var/www/$APP_NAME/public;
-
-  # set the max size for file uploads to 20Mb
-  client_max_body_size 20M;
-
-  # with capistrano's disable web task, rewrite all requests to maintenance.html
-  if (-f \$document_root/system/maintenance.html) {
-    rewrite  ^(.*)\$  /system/maintenance.html last;
-    break;
-  }
-
-  location / {
-    # set headers for passing the request to the backend
-    proxy_set_header X-FORWARDED_PROTO https;
-    proxy_set_header  X-Real-IP  \$remote_addr;
-    proxy_set_header  X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header Host \$http_host;
-    proxy_redirect false;
-    proxy_max_temp_file_size 0;
-    
-    # serve the static file if it exists
-    if (-f \$request_filename) { 
-      break; 
-    }
-
-    # serve static directory index if it exists
-    if (-f \$request_filename/index.html) {
-      rewrite (.*) \$1/index.html break;
-    }
-
-    # necessary rule for rails page caching
-    if (-f \$request_filename.html) {
-      rewrite (.*) \$1.html break;
-    }
-
-    # set necessary headers and pass the request to the upstream cluster
-    if (!-f \$request_filename) {
-      proxy_pass http://thin;
-      break;
-    }
-  }
-
-  error_page 500 502 503 504 /500.html;
-  location = /500.html {
-    root $PREFIX/var/www/$APP_NAME/public;
-  }
 }
-EOF
-
-###############################################################################
-# Create the monit rc script (from http://quaddro.net/rcscripts/rc.monit). This
-# file is deprecated because it doesn't offer any real advantages. It will
-# remain for now, however.
-
-cat > $PREFIX/etc/rc.d/monit << EOF
-#!/bin/sh
-# Start/stop/restart monit
-# Important: monit must be set to be a daemon in $PREFIX/etc/monitrc
-#
-# You will probably want to start this towards the end.
-#
-MONIT=$PREFIX/bin/monit
-
-monit_start() { 
-  \$MONIT
-}
-monit_stop() {
-  \$MONIT quit
-}
-monit_restart() {
-  monit_stop
-  sleep 1
-  monit_start
-}
-monit_reload() {
-  \$MONIT reload
-}
-case "\$1" in
-'start')
-  monit_start
-  ;;
-'stop')
-  monit_stop
-  ;;
-'restart')
-  monit_restart
-  ;;
-'reload')
-  monit_reload
-  ;;
-*)
-  echo "usage \$0 start|stop|restart|reload"
-esac
-EOF
-
-chmod 755 $PREFIX/etc/rc.d/monit
-
-###############################################################################
-# Create the monitrc file. This comes from Ezra Zygmuntowicz. I've commented
-# out all but the essential lines. This works perfectly fine, but it could
-# use touch up.
-
-cat > $PREFIX/etc/monitrc << EOF
-set daemon 30 
-#set logfile syslog facility log_daemon 
-#set mailserver smtp.example.com 
-#set mail-format {from:monit@example.com} 
-#set alert sysadmin@example.com only on { timeout, nonexist } 
-set httpd port $MONIT_PORT
-  allow localhost 
-include $PREFIX/etc/monit/*.monitrc
-EOF
-
-chmod 700 $PREFIX/etc/monitrc
-
-###############################################################################
-# Make the directory that holds the individual configuration files for monit.
-
-mkdir $PREFIX/etc/monit
-
-###############################################################################
-# Create a monit configuration file for nginx. It's wise to have a failed port
-# line for each port nginx listens on. Feel free to tweak the numbers as you
-# see fit.
-
-cat > $PREFIX/etc/monit/nginx.monitrc << EOF
-check process nginx
-  with pidfile $PREFIX/var/run/nginx.pid
-  start program "$PREFIX/etc/rc.d/nginx start"
-  stop program "$PREFIX/etc/rc.d/nginx stop"
-  if totalmem > 25.0 MB for 5 cycles then restart
-  if failed port $APP_PORT then restart
-  if cpu usage > 95% for 3 cycles then restart
-  if 5 restarts within 5 cycles then timeout
-  group nginx
-EOF
-
-###############################################################################
-# Create a monit configuration file for the thin servers. This is based on the
-# one that comes with the thin gem. It's located in the thin gem's examples
-# directory.
-
-cat > $PREFIX/etc/monit/$APP_NAME.monitrc << EOF
-check process ${APP_NAME}0
-  with pidfile $PREFIX/var/www/$APP_NAME/tmp/pids/thin.0.pid
-  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.pid -o 0"
-  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.0.pid"
-  if totalmem > 90.0 MB for 5 cycles then restart
-  if failed unixsocket $PREFIX/var/tmp/thin.0.sock then restart
-  if cpu usage > 95% for 3 cycles then restart
-  if 5 restarts within 5 cycles then timeout
-  group $APP_NAME
-
-check process ${APP_NAME}1
-  with pidfile $PREFIX/var/www/$APP_NAME/tmp/pids/thin.1.pid
-  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.pid -o 1"
-  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.1.pid"
-  if totalmem > 90.0 MB for 5 cycles then restart
-  if failed unixsocket $PREFIX/var/tmp/thin.1.sock then restart
-  if cpu usage > 95% for 3 cycles then restart
-  if 5 restarts within 5 cycles then timeout
-  group $APP_NAME
 EOF
 
 ###############################################################################
 # Create the boot script. The script removes pid files from web app locations.
-# Thin will not start if it has orphaned pid files. The script will then start
-# monit which in turn will start up nginx and the thin servers. Be careful
-# running this script arbitrarily; you don't want to delete the pid files of
-# running processes!
+# Be careful running this script arbitrarily; you don't want to delete the pid
+# files of running processes!
 
 cat > $PREFIX/etc/rc.d/boot << EOF
 . \$HOME/.bash_profile
 find \$PREFIX/var/www/ -type f -name *.pid -print0 | xargs -0 rm
-monit
+\$PREFIX/etc/rc.d/nginx start
 EOF
 
 chmod 755 $PREFIX/etc/rc.d/boot
@@ -763,6 +466,4 @@ rm $PREFIX/var/tmp/oldcrontab $PREFIX/var/tmp/newcrontab
 # file works perfectly fine on WebFaction, so disregard this comment end users.
 
 ###############################################################################
-# Fire up monit, nginx, and the thin servers!
-
-monit
+$PREFIX/etc/rc.d/boot
