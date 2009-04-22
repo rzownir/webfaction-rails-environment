@@ -42,18 +42,11 @@ ldconfig $PREFIX/lib
 
 ###############################################################################
 # Erlang R13B
-# There is a build error on Redhat/CentOS concerning ssl in R12. The easy fix
-# is to disable ssl support in Erlang. If some can get Erlang to build with SSL
-# on WebFaction machines, PLEASE let me know how. I tried the solution on
-# http://www.erlang.org/pipermail/erlang-bugs/2007-December/000562.html, but
-# then got an error dealing with krb5. Maybe downloading and including the
-# kerberos 5 source would solve the problem, but I've been messing around with
-# with this too long. Haven't check the status of this problem on R13
 
 cd $PREFIX/src
 wget http://erlang.org/download/otp_src_R13B.tar.gz
 tar xzvf otp_src_R13B.tar.gz
 cd otp_src_R13B
-./configure --prefix=$PREFIX --without-ssl # May not be necessary with R13
+./configure --prefix=$PREFIX
 make
 make install
