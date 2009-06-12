@@ -22,9 +22,9 @@ make
 make install
 
 cd $PREFIX/src
-wget http://download.tangent.org/libmemcached-0.28.tar.gz
-tar xzvf libmemcached-0.28.tar.gz
-cd libmemcached-0.28
+wget http://download.tangent.org/libmemcached-0.30.tar.gz
+tar xzvf libmemcached-0.30.tar.gz
+cd libmemcached-0.30
 ./configure --prefix=$PREFIX
 make
 make install
@@ -44,9 +44,39 @@ ldconfig $PREFIX/lib
 # Erlang R13B
 
 cd $PREFIX/src
-wget http://erlang.org/download/otp_src_R13B.tar.gz
-tar xzvf otp_src_R13B.tar.gz
-cd otp_src_R13B
+wget http://erlang.org/download/otp_src_R13B01.tar.gz
+tar xzvf otp_src_R13B01.tar.gz
+cd otp_src_R13B01
 ./configure --prefix=$PREFIX
+make
+make install
+
+###############################################################################
+# CouchDB
+
+# Mozilla SpiderMonkey
+cd $PREFIX/src
+wget http://ftp.mozilla.org/pub/mozilla.org/js/js-1.8.0-rc1.tar.gz
+tar xzvf js-1.8.0-rc1.tar.gz
+cd js/src
+make -f Makefile.ref
+JS_DIST=$PREFIX/spidermonkey make -f Makefile.ref export
+
+export LD_LIBRARY_PATH=$PREFIX/spidermonkey/lib # Linux
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$PREFIX/spidermonkey/lib # Mac OS X
+
+cd $PREFIX/src
+wget http://download.icu-project.org/files/icu4c/4.2.0.1/icu4c-4_2_0_1-src.tgz
+tar xzvf icu4c-4_2_0_1-src.tgz
+cd icu/source
+./configure --prefix=$PREFIX
+make
+make install
+
+cd $PREFIX/src
+wget http://www.gtlib.gatech.edu/pub/apache/couchdb/0.9.0/apache-couchdb-0.9.0.tar.gz
+tar xzvf apache-couchdb-0.9.0.tar.gz
+cd apache-couchdb-0.9.0
+./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/spidermonkey/lib --with-js-include=$PREFIX/spidermonkey/include
 make
 make install

@@ -73,13 +73,13 @@ chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
 ###############################################################################
-# Ruby Enterprise Edition 1.8.6 - 20090201
+# Ruby Enterprise Edition 1.8.6 - 20090610
 # Reduces memory consumption of rails apps by up to 33% when used with Passenger.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/51100/ruby-enterprise-1.8.6-20090201.tar.gz
-tar xzvf ruby-enterprise-1.8.6-20090201.tar.gz
-cd ruby-enterprise-1.8.6-20090201
+wget http://www.rubyenterpriseedition.com/ruby-enterprise-1.8.6-20090610.tar.gz
+tar xzvf ruby-enterprise-1.8.6-20090610.tar.gz
+cd ruby-enterprise-1.8.6-20090610
 ./installer -a $PREFIX
 
 # Make sure RubyGems is up to date
@@ -99,25 +99,25 @@ $PREFIX/bin/gem update --system
 gem install thin capistrano termios --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.6.2.4
+# Git 1.6.3.2
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.6.2.4.tar.gz
-tar xzvf git-1.6.2.4.tar.gz
-cd git-1.6.2.4
+wget http://kernel.org/pub/software/scm/git/git-1.6.3.2.tar.gz
+tar xzvf git-1.6.3.2.tar.gz
+cd git-1.6.3.2
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.2.4.tar.gz
-tar xzvf git-manpages-1.6.2.4.tar.gz
-rm git-manpages-1.6.2.4.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.3.2.tar.gz
+tar xzvf git-manpages-1.6.3.2.tar.gz
+rm git-manpages-1.6.3.2.tar.gz
 
 ###############################################################################
-# Nginx 0.6.36
+# Nginx 0.7.59
 # Here we download the sources for openssl, pcre, zlib, and nginx and git clone
 # the nginx-upstream-fair module. Nginx will be compiled with the help of the
 # other sources. Four other modules will be built into nginx: http_ssl_module,
@@ -135,10 +135,10 @@ wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.9.tar.gz
 tar xzvf pcre-7.9.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.6.36.tar.gz
-tar xzvf nginx-0.6.36.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.7.59.tar.gz
+tar xzvf nginx-0.7.59.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.6.36
+cd nginx-0.7.59
 ./configure \
 --with-pcre=$PREFIX/src/pcre-7.9 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \
@@ -356,6 +356,21 @@ http {
   gzip_proxied any;
   gzip_types text/plain text/html text/css application/x-javascript text/xml
              application/xml application/xml+rss text/javascript;
+	
+	# reverse proxy clusters
+  # upstream mongrel {
+  #   # fair load balancing requires the nginx-upstream-fair module
+  #   fair;
+  #   server 127.0.0.1:5000;
+  #   server 127.0.0.1:5001;
+  #   server 127.0.0.1:5002;
+  # }
+
+  # upstream thin {
+  #   fair;
+  #   server unix:$PREFIX/var/tmp/thin.0.sock;
+  #   server unix:$PREFIX/var/tmp/thin.1.sock;
+  # }
 	
   # load vhost configuration files
   include $PREFIX/etc/nginx/vhosts/*.conf;
