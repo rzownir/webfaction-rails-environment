@@ -52,7 +52,7 @@ make
 make install
 
 ###############################################################################
-# CouchDB
+# CouchDB (requires Erlang)
 
 # Mozilla SpiderMonkey
 cd $PREFIX/src
@@ -74,7 +74,7 @@ make
 make install
 
 cd $PREFIX/src
-wget http://www.apache.org/dyn/closer.cgi?path=/couchdb/0.9.1/apache-couchdb-0.9.1.tar.gz
+wget http://mirrors.sirium.net/pub/apache/couchdb/0.9.1/apache-couchdb-0.9.1.tar.gz
 tar xzvf apache-couchdb-0.9.1.tar.gz
 cd apache-couchdb-0.9.1
 ./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/spidermonkey/lib --with-js-include=$PREFIX/spidermonkey/include

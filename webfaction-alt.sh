@@ -325,6 +325,10 @@ http {
 	passenger_ruby $PREFIX/bin/ruby;
 	passenger_max_pool_size 2; # How many passenger instances can exist (default was 6)
 	
+	set_real_ip_from 192.168.1.101; # IP of server (should be external)
+	set_real_ip_from 127.0.0.1;
+	real_ip_header X-Real-IP;
+	
   # pull in mime types
   include $PREFIX/etc/nginx/mime.types;
 
