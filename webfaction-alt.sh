@@ -77,7 +77,7 @@ mkdir $PREFIX/src
 # Reduces memory consumption of rails apps by up to 33% when used with Passenger.
 
 cd $PREFIX/src
-wget http://www.rubyenterpriseedition.com/ruby-enterprise-1.8.6-20090610.tar.gz
+wget http://rubyforge.org/frs/download.php/58677/ruby-enterprise-1.8.6-20090610.tar.gz
 tar xzvf ruby-enterprise-1.8.6-20090610.tar.gz
 cd ruby-enterprise-1.8.6-20090610
 ./installer -a $PREFIX
@@ -99,25 +99,25 @@ $PREFIX/bin/gem update --system
 gem install thin capistrano termios --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.6.3.2
+# Git 1.6.4.2
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.6.3.2.tar.gz
-tar xzvf git-1.6.3.2.tar.gz
-cd git-1.6.3.2
+wget http://kernel.org/pub/software/scm/git/git-1.6.4.2.tar.gz
+tar xzvf git-1.6.4.2.tar.gz
+cd git-1.6.4.2
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.3.2.tar.gz
-tar xzvf git-manpages-1.6.3.2.tar.gz
-rm git-manpages-1.6.3.2.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.4.2.tar.gz
+tar xzvf git-manpages-1.6.4.2.tar.gz
+rm git-manpages-1.6.4.2.tar.gz
 
 ###############################################################################
-# Nginx 0.7.59
+# Nginx 0.7.61
 # Here we download the sources for openssl, pcre, zlib, and nginx and git clone
 # the nginx-upstream-fair module. Nginx will be compiled with the help of the
 # other sources. Four other modules will be built into nginx: http_ssl_module,
@@ -135,10 +135,10 @@ wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.9.tar.gz
 tar xzvf pcre-7.9.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.7.59.tar.gz
-tar xzvf nginx-0.7.59.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.7.61.tar.gz
+tar xzvf nginx-0.7.61.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.7.59
+cd nginx-0.7.61
 ./configure \
 --with-pcre=$PREFIX/src/pcre-7.9 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \

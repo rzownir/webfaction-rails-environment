@@ -6,25 +6,25 @@
 # Memcached
 
 cd $PREFIX/src
-wget http://monkey.org/~provos/libevent-1.4.10-stable.tar.gz
-tar xzvf libevent-1.4.10-stable.tar.gz
-cd libevent-1.4.10-stable
+wget http://monkey.org/~provos/libevent-1.4.12-stable.tar.gz
+tar xzvf libevent-1.4.12-stable.tar.gz
+cd libevent-1.4.12-stable
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://www.danga.com/memcached/dist/memcached-1.2.8.tar.gz
-tar xzvf memcached-1.2.8.tar.gz
-cd memcached-1.2.8
+wget http://www.danga.com/memcached/dist/memcached-1.4.1.tar.gz
+tar xzvf memcached-1.4.1.tar.gz
+cd memcached-1.4.1
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://download.tangent.org/libmemcached-0.30.tar.gz
-tar xzvf libmemcached-0.30.tar.gz
-cd libmemcached-0.30
+wget http://download.tangent.org/libmemcached-0.31.tar.gz
+tar xzvf libmemcached-0.31.tar.gz
+cd libmemcached-0.31
 ./configure --prefix=$PREFIX
 make
 make install
@@ -41,7 +41,7 @@ gem install memcached
 ldconfig $PREFIX/lib
 
 ###############################################################################
-# Erlang R13B
+# Erlang R13B01
 
 cd $PREFIX/src
 wget http://erlang.org/download/otp_src_R13B01.tar.gz
@@ -66,17 +66,17 @@ export LD_LIBRARY_PATH=$PREFIX/spidermonkey/lib # Linux
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$PREFIX/spidermonkey/lib # Mac OS X
 
 cd $PREFIX/src
-wget http://download.icu-project.org/files/icu4c/4.2.0.1/icu4c-4_2_0_1-src.tgz
-tar xzvf icu4c-4_2_0_1-src.tgz
+wget http://download.icu-project.org/files/icu4c/4.3.1/icu4c-4_3_1-src.tgz
+tar xzvf icu4c-4_3_1-src.tgz
 cd icu/source
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://www.gtlib.gatech.edu/pub/apache/couchdb/0.9.0/apache-couchdb-0.9.0.tar.gz
-tar xzvf apache-couchdb-0.9.0.tar.gz
-cd apache-couchdb-0.9.0
+wget http://www.apache.org/dyn/closer.cgi?path=/couchdb/0.9.1/apache-couchdb-0.9.1.tar.gz
+tar xzvf apache-couchdb-0.9.1.tar.gz
+cd apache-couchdb-0.9.1
 ./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/spidermonkey/lib --with-js-include=$PREFIX/spidermonkey/include
 make
 make install
