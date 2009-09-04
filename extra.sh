@@ -14,7 +14,7 @@ make
 make install
 
 cd $PREFIX/src
-wget http://www.danga.com/memcached/dist/memcached-1.4.1.tar.gz
+wget http://memcached.googlecode.com/files/memcached-1.4.1.tar.gz
 tar xzvf memcached-1.4.1.tar.gz
 cd memcached-1.4.1
 ./configure --prefix=$PREFIX
@@ -60,10 +60,10 @@ wget http://ftp.mozilla.org/pub/mozilla.org/js/js-1.8.0-rc1.tar.gz
 tar xzvf js-1.8.0-rc1.tar.gz
 cd js/src
 make -f Makefile.ref
-JS_DIST=$PREFIX/spidermonkey make -f Makefile.ref export
+JS_DIST=$PREFIX make -f Makefile.ref export
 
-export LD_LIBRARY_PATH=$PREFIX/spidermonkey/lib # Linux
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$PREFIX/spidermonkey/lib # Mac OS X
+export LD_LIBRARY_PATH=$PREFIX/lib # Linux
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$PREFIX/lib # Mac OS X
 
 cd $PREFIX/src
 wget http://download.icu-project.org/files/icu4c/4.3.1/icu4c-4_3_1-src.tgz
@@ -77,6 +77,6 @@ cd $PREFIX/src
 wget http://mirrors.sirium.net/pub/apache/couchdb/0.9.1/apache-couchdb-0.9.1.tar.gz
 tar xzvf apache-couchdb-0.9.1.tar.gz
 cd apache-couchdb-0.9.1
-./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/spidermonkey/lib --with-js-include=$PREFIX/spidermonkey/include
+./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 make
 make install
