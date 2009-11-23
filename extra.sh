@@ -6,25 +6,25 @@
 # Memcached
 
 cd $PREFIX/src
-wget http://monkey.org/~provos/libevent-1.4.12-stable.tar.gz
-tar xzvf libevent-1.4.12-stable.tar.gz
-cd libevent-1.4.12-stable
+wget http://monkey.org/~provos/libevent-1.4.13-stable.tar.gz
+tar xzvf libevent-1.4.13-stable.tar.gz
+cd libevent-1.4.13-stable
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://memcached.googlecode.com/files/memcached-1.4.1.tar.gz
-tar xzvf memcached-1.4.1.tar.gz
-cd memcached-1.4.1
+wget http://memcached.googlecode.com/files/memcached-1.4.3.tar.gz
+tar xzvf memcached-1.4.3.tar.gz
+cd memcached-1.4.3
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://download.tangent.org/libmemcached-0.31.tar.gz
-tar xzvf libmemcached-0.31.tar.gz
-cd libmemcached-0.31
+wget http://download.tangent.org/libmemcached-0.35.tar.gz
+tar xzvf libmemcached-0.35.tar.gz
+cd libmemcached-0.35
 ./configure --prefix=$PREFIX
 make
 make install
@@ -41,12 +41,12 @@ gem install memcached
 ldconfig $PREFIX/lib
 
 ###############################################################################
-# Erlang R13B01
+# Erlang R13B02-1
 
 cd $PREFIX/src
-wget http://erlang.org/download/otp_src_R13B01.tar.gz
-tar xzvf otp_src_R13B01.tar.gz
-cd otp_src_R13B01
+wget http://erlang.org/download/otp_src_R13B02-1.tar.gz
+tar xzvf otp_src_R13B02-1.tar.gz
+cd otp_src_R13B02-1
 ./configure --prefix=$PREFIX
 make
 make install
@@ -66,17 +66,17 @@ export LD_LIBRARY_PATH=$PREFIX/lib # Linux
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$PREFIX/lib # Mac OS X
 
 cd $PREFIX/src
-wget http://download.icu-project.org/files/icu4c/4.3.1/icu4c-4_3_1-src.tgz
-tar xzvf icu4c-4_3_1-src.tgz
+wget http://download.icu-project.org/files/icu4c/4.3.3/icu4c-4_3_3-src.tgz
+tar xzvf icu4c-4_3_3-src.tgz
 cd icu/source
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://mirrors.sirium.net/pub/apache/couchdb/0.9.1/apache-couchdb-0.9.1.tar.gz
-tar xzvf apache-couchdb-0.9.1.tar.gz
-cd apache-couchdb-0.9.1
+wget http://apache.mirror.facebook.net/couchdb/0.10.0/apache-couchdb-0.10.0.tar.gz
+tar xzvf apache-couchdb-0.10.0.tar.gz
+cd apache-couchdb-0.10.0
 ./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 make
 make install

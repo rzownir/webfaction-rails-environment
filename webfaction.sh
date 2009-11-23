@@ -122,32 +122,32 @@ gem install rails thin capistrano termios sqlite3-ruby --no-rdoc --no-ri
 gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 
 # The typo blog application currently requires rails version 2.2.2
-gem install rails -v '= 2.2.2' --no-rdoc --no-ri
+gem install rails -v '= 2.2.3' --no-rdoc --no-ri
 gem install typo --no-rdoc --no-ri
 
 gem install passenger --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.6.4.2
+# Git 1.6.5.3
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not. Git will be used to retrieve the
 # third party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.6.4.2.tar.gz
-tar xzvf git-1.6.4.2.tar.gz
-cd git-1.6.4.2
+wget http://kernel.org/pub/software/scm/git/git-1.6.5.3.tar.gz
+tar xzvf git-1.6.5.3.tar.gz
+cd git-1.6.5.3
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.4.2.tar.gz
-tar xzvf git-manpages-1.6.4.2.tar.gz
-rm git-manpages-1.6.4.2.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.5.3.tar.gz
+tar xzvf git-manpages-1.6.5.3.tar.gz
+rm git-manpages-1.6.5.3.tar.gz
 
 ###############################################################################
-# Nginx 0.7.61
+# Nginx 0.7.64
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -170,20 +170,20 @@ rm git-manpages-1.6.4.2.tar.gz
 export PASSENGER_ROOT=`passenger-config --root`
 
 cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-0.9.8k.tar.gz
-tar xzvf openssl-0.9.8k.tar.gz
-wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.9.tar.gz
-tar xzvf pcre-7.9.tar.gz
+wget http://www.openssl.org/source/openssl-0.9.8l.tar.gz
+tar xzvf openssl-0.9.8l.tar.gz
+wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.00.tar.gz
+tar xzvf pcre-8.00.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.7.61.tar.gz
-tar xzvf nginx-0.7.61.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.7.64.tar.gz
+tar xzvf nginx-0.7.64.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.7.61
+cd nginx-0.7.64
 ./configure \
---with-pcre=$PREFIX/src/pcre-7.9 \
+--with-pcre=$PREFIX/src/pcre-8.00 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \
---with-openssl=$PREFIX/src/openssl-0.9.8k \
+--with-openssl=$PREFIX/src/openssl-0.9.8l \
 --with-http_ssl_module \
 --with-http_flv_module \
 --with-http_realip_module \
@@ -374,7 +374,7 @@ cat > $PREFIX/etc/nginx/nginx.conf << EOF
 #user $USER $USER;
 
 # number of nginx workers
-worker_processes  6;
+worker_processes  4;
 
 # location of nginx pid file
 pid $PREFIX/var/run/nginx.pid;

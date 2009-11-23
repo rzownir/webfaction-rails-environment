@@ -73,13 +73,13 @@ chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
 ###############################################################################
-# Ruby Enterprise Edition 1.8.6 - 20090610
+# Ruby Enterprise Edition 1.8.7 - 2009.10
 # Reduces memory consumption of rails apps by up to 33% when used with Passenger.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/58677/ruby-enterprise-1.8.6-20090610.tar.gz
-tar xzvf ruby-enterprise-1.8.6-20090610.tar.gz
-cd ruby-enterprise-1.8.6-20090610
+wget http://rubyforge.org/frs/download.php/66162/ruby-enterprise-1.8.7-2009.10.tar.gz
+tar xzvf ruby-enterprise-1.8.7-2009.10.tar.gz
+cd ruby-enterprise-1.8.7-2009.10
 ./installer -a $PREFIX
 
 # Make sure RubyGems is up to date
@@ -99,25 +99,25 @@ $PREFIX/bin/gem update --system
 gem install thin capistrano termios --no-rdoc --no-ri
 
 ###############################################################################
-# Git 1.6.4.2
+# Git 1.6.5.3
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.6.4.2.tar.gz
-tar xzvf git-1.6.4.2.tar.gz
-cd git-1.6.4.2
+wget http://kernel.org/pub/software/scm/git/git-1.6.5.3.tar.gz
+tar xzvf git-1.6.5.3.tar.gz
+cd git-1.6.5.3
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.4.2.tar.gz
-tar xzvf git-manpages-1.6.4.2.tar.gz
-rm git-manpages-1.6.4.2.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.5.3.tar.gz
+tar xzvf git-manpages-1.6.5.3.tar.gz
+rm git-manpages-1.6.5.3.tar.gz
 
 ###############################################################################
-# Nginx 0.7.61
+# Nginx 0.7.64
 # Here we download the sources for openssl, pcre, zlib, and nginx and git clone
 # the nginx-upstream-fair module. Nginx will be compiled with the help of the
 # other sources. Four other modules will be built into nginx: http_ssl_module,
@@ -129,20 +129,20 @@ rm git-manpages-1.6.4.2.tar.gz
 export PASSENGER_ROOT=`passenger-config --root`
 
 cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-0.9.8k.tar.gz
-tar xzvf openssl-0.9.8k.tar.gz
-wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-7.9.tar.gz
-tar xzvf pcre-7.9.tar.gz
+wget http://www.openssl.org/source/openssl-0.9.8l.tar.gz
+tar xzvf openssl-0.9.8l.tar.gz
+wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.00.tar.gz
+tar xzvf pcre-8.00.tar.gz
 wget http://www.zlib.net/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.7.61.tar.gz
-tar xzvf nginx-0.7.61.tar.gz
+wget http://sysoev.ru/nginx/nginx-0.7.64.tar.gz
+tar xzvf nginx-0.7.64.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.7.61
+cd nginx-0.7.64
 ./configure \
---with-pcre=$PREFIX/src/pcre-7.9 \
+--with-pcre=$PREFIX/src/pcre-8.00 \
 --with-zlib=$PREFIX/src/zlib-1.2.3 \
---with-openssl=$PREFIX/src/openssl-0.9.8k \
+--with-openssl=$PREFIX/src/openssl-0.9.8l \
 --with-http_ssl_module \
 --with-http_flv_module \
 --with-http_realip_module \

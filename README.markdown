@@ -29,8 +29,8 @@ reports.
 * Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
 * Latest RubyGems
 * Gems: rails, thin, capistrano, termios, sqlite3-ruby, mysql, typo, and passenger
-* Git 1.6.4.2
-* nginx 0.7.61 (with nginx-upstream-fair module for fair load balancing and passenger module)
+* Git 1.6.5.3
+* nginx 0.7.64 (with nginx-upstream-fair module for fair load balancing and passenger module)
 * Monit 5.0.3
 * Startup scripts and working default configuration files for monit and nginx
 
@@ -73,11 +73,11 @@ There are a couple of optional things you should do:
 
 # New Script
 ## What's Provided
-* Ruby Enterprise Edition 1.8.6 - 20090610
+* Ruby Enterprise Edition 1.8.7 - 2009.10
 * Latest RubyGems
 * Gems: rack, rails, mysql, sqlite3-ruby, passenger, thin, capistrano, termios
-* Git 1.6.4.2
-* nginx 0.7.61 (with nginx-upstream-fair module for fair load balancing and passenger module)
+* Git 1.6.5.3
+* nginx 0.7.64 (with nginx-upstream-fair module for fair load balancing and passenger module)
 * Startup scripts and working default configuration files for nginx
 
 ## Before Running the Script
