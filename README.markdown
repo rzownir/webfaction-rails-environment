@@ -1,38 +1,26 @@
 # WebFaction Rails Stack
 The accompanying shell script will automatically build and configure your own
-private **Ruby on Rails** stack. It was written with
-**[WebFaction](http://www.webfaction.com/?affiliate=rzownir)** users in
-mind, but is more or less generic aside from a few minor details. Essentially,
-the directories `$HOME/logs/user` and `$HOME/webapps/$APP_NAME` must exist
-before running the script.
+private **Ruby on Rails** stack. It was written with **[WebFaction](http://www.webfaction.com/?affiliate=rzownir)**
+users in mind, but is more or less generic aside from a few minor details.
+Essentially, the directories `$HOME/logs/user` and `$HOME/webapps/$APP_NAME`
+must exist before running the script.
 
-There are now two stack scripts, the classic one, webfaction.sh, and a new one,
-webfaction-alt.sh. The classic one is a monit/nginx/ruby 1.8.7 MRI/thin stack
-and the new one is an nginx/ruby enterprise edition 1.8.6/passenger stack. The
-classic script includes passenger and the passenger nginx module in case you
-want to give it a whirl. Now that passenger works with nginx, it has become the
-clear choice. It is certainly simpler. However, although the new stack uses less
-physical memory, the rss is often higher. This is because of multiple counting.
-Depending on how WebFaction meters memory usage, this could be a practical
-downside.
-
-To compare your total rss vs your total private dirty rss (physical memory usage) run these commands:
-
-	ps -u $USER -o rss | grep -v peruser | awk '{sum+=$1} END {printf("\n%.0fMB total RSS\n", sum/1024)}'
-	(ps -u $USER -o pid | awk '{ print "grep Private_Dirty /proc/"$1"/smaps" }' | sh | awk '{ sum += $2 } END { printf("%.0fMB total Private Dirty RSS\n\n", sum/1024) }') 2>/dev/null
-
-You will see that your actual physical memory usage is much smaller than what rss
-reports.
-
-# Classic Script
 ## What's Provided
-* Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
-* Latest RubyGems
-* Gems: rails, thin, capistrano, termios, sqlite3-ruby, mysql, typo, and passenger
 * Git 1.6.5.3
-* nginx 0.7.64 (with nginx-upstream-fair module for fair load balancing and passenger module)
+* Your choice of Ruby Enterprise Edition 1.8.7 - 2009.10 or Ruby 1.8.7 (latest
+  from the 1.8.7 subversion branch)
+* Latest RubyGems
+* Gems: rack, rails, thin, passenger, capistrano, termios, sqlite3-ruby, mysql
+* nginx 0.7.64 (with nginx-upstream-fair module for fair load balancing and
+  passenger module)
 * Monit 5.0.3
 * Startup scripts and working default configuration files for monit and nginx
+
+## Recent Changes
+I have combined the two previous scripts, 'classic' and 'new'. You still have
+the choice of running things with passenger or a thin cluster. However,
+passenger is the default. You will have to follow a few extra steps to run a
+thin stack. See below.
 
 ## Before Running the Script
 1. Create a rails app from the WebFaction control panel. Leave the autostart
@@ -55,15 +43,20 @@ reports.
        one. The default value is `4000`.
      * `MONIT_PORT` is the port WebFaction assigned to the app created in step
        two. The default value is `4002`.
+4. If you want to install Ruby 1.8.7 from the official subversion repository,
+   edit line 12 of the script to read `export RUBYENTED=false`
 
 ## After Running the Script
 If no unforeseen errors occurred, your rails app will be up and running in
 production mode. Of course, `$HOME/webapps/$APP_NAME` must contain a
-valid app for this to be true, even if it's just a skeleton. The working
-default configuration sets up two thin instances listening on unix sockets
-(mongrel does not have this capability) with nginx as the fair load balancing
-reverse proxy. Monit watches nginx and the thin servers. A crontab entry
-ensures that your setup springs back to life when the server has to reboot.
+valid app for this to be true, even if it's just a skeleton.
+
+By default passenger serves up the app. This can be easily changed so that two
+thin instances are set up listening on unix sockets (mongrel does not have this
+capability) with nginx as the fair load balancing reverse proxy. Monit watches
+nginx (and the thin servers, if set up). A crontab entry ensures that your setup
+springs back to life when the server is rebooted.
+
 There are a couple of optional things you should do:
 
 1. Inspect the nginx and monit conf files to learn how they work.
@@ -71,18 +64,50 @@ There are a couple of optional things you should do:
 2. Generate ssl certificates and create an nginx https vhost following my
    example file if you have a dedicated IP address for https traffic.
 
-# New Script
-## What's Provided
-* Ruby Enterprise Edition 1.8.7 - 2009.10
-* Latest RubyGems
-* Gems: rack, rails, mysql, sqlite3-ruby, passenger, thin, capistrano, termios
-* Git 1.6.5.3
-* nginx 0.7.64 (with nginx-upstream-fair module for fair load balancing and passenger module)
-* Startup scripts and working default configuration files for nginx
+## Switching to thin
+If you want to use thin instead of passenger:
 
-## Before Running the Script
-Follow Steps 1 and 3 for the classic script, and ignore monit related
-information in Step 3.
+Move the thin nginx vhost into place.
 
-# Feedback
+	mv $PREFIX/etc/nginx/vhosts/$APP_NAME.conf $PREFIX/etc/nginx/vhosts/$APP_NAME-passenger.conf.example
+	mv $PREFIX/etc/nginx/vhosts/$APP_NAME-thin.conf.example $PREFIX/etc/nginx/vhosts/$APP_NAME.conf
+
+Move the thin monitrc file into place.
+
+	mv $PREFIX/etc/monit/$APP_NAME.monitrc.example $PREFIX/etc/monit/$APP_NAME.monitrc
+
+Quit all processes and restart monit...
+
+	monit stop all
+	monit quit
+	monit
+
+Prevent passenger processes from starting up with nginx. You have to manually
+edit `$PREFIX/etc/nginx/nginx.conf`. Comment out the passenger directives:
+`passenger_root` (most importantly), `passenger_ruby`, `passenger_max_pool_size`,
+and any others you add.
+
+Also be sure that the upstream thin directive is uncommented in the nginx.conf
+file. I didn't comment it out to begin with because it doesn't do any harm if
+it goes unused.
+
+## Other Notes
+Although the passenger stack uses less physical memory, the rss is often higher. This is because of multiple counting. Depending on how WebFaction meters memory usage, this could be a practical downside.
+
+To compare your total rss vs your total private dirty rss (physical memory usage) run these commands:
+
+	ps -u $USER -o rss | grep -v peruser | awk '{sum+=$1} END {printf("\n%.0fMB total RSS\n", sum/1024)}'
+	(ps -u $USER -o pid | awk '{ print "grep Private_Dirty /proc/"$1"/smaps" }' | sh | awk '{ sum += $2 } END { printf("%.0fMB total Private Dirty RSS\n\n", sum/1024) }') 2>/dev/null
+
+You will see that your actual physical memory usage is much smaller than what rss
+reports.
+
+## Extras
+The script `extra.sh` contains some additional goodies:
+
+* Memcached
+* Erlang
+* CouchDB
+
+## Feedback
 Please leave a blog comment!

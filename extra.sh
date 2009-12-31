@@ -41,12 +41,12 @@ gem install memcached
 ldconfig $PREFIX/lib
 
 ###############################################################################
-# Erlang R13B02-1
+# Erlang R13B03
 
 cd $PREFIX/src
-wget http://erlang.org/download/otp_src_R13B02-1.tar.gz
-tar xzvf otp_src_R13B02-1.tar.gz
-cd otp_src_R13B02-1
+wget http://erlang.org/download/otp_src_R13B03.tar.gz
+tar xzvf otp_src_R13B03.tar.gz
+cd otp_src_R13B03
 ./configure --prefix=$PREFIX
 make
 make install
@@ -74,9 +74,9 @@ make
 make install
 
 cd $PREFIX/src
-wget http://apache.mirror.facebook.net/couchdb/0.10.0/apache-couchdb-0.10.0.tar.gz
-tar xzvf apache-couchdb-0.10.0.tar.gz
-cd apache-couchdb-0.10.0
+wget http://www.ibiblio.org/pub/mirrors/apache/couchdb/0.10.1/apache-couchdb-0.10.1.tar.gz
+tar xzvf apache-couchdb-0.10.1.tar.gz
+cd apache-couchdb-0.10.1
 ./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 make
 make install

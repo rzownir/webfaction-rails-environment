@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WebFaction Ruby on Rails Stack Builder
-# (c) 2008-2009 - Ronald M. Zownir
+# (c) 2008-2010 - Ronald M. Zownir
 
 ###############################################################################
 # Edit these variables as instructed in the README.
@@ -9,6 +9,7 @@ export PREFIX=$HOME/apps
 export APP_NAME=blog
 export APP_PORT=4000
 export MONIT_PORT=4002
+export RUBYENTED=true
 
 ###############################################################################
 # Back up $HOME/.bash_profile and write a clean file. The string limiter
@@ -74,60 +75,6 @@ chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
 ###############################################################################
-# Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
-# The good thing about having your own ruby install is that you can have the
-# most up to date version with security holes patched. You could also have
-# custom options enabled when the configure script is executed. I leave the
-# customization up to you, but it's fine as it is here.
-
-cd $PREFIX/src
-svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_7/
-cd ruby_1_8_7
-autoconf
-./configure --prefix=$PREFIX
-make
-make install
-#make install-doc # Documentation generation is ridiculously memory hungry!
-
-###############################################################################
-# RubyGems 1.3.5
-# By installing RubyGems in your private application environment, you have
-# total control over the gems you require. You can install, update, and
-# uninstall whatever gems you want without having to freeze gems in your rails
-# applications.
-
-cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/60718/rubygems-1.3.5.tgz
-tar xzvf rubygems-1.3.5.tgz
-cd rubygems-1.3.5
-$PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
-
-# Make sure RubyGems is up to date
-$PREFIX/bin/gem update --system
-
-###############################################################################
-# Gems
-# The following gems (along with their dependencies) will be installed:
-# rails - it's probably the reason you care to take a look at this script
-# thin - mongrel's successor: mongrel's http parser, built in clustering,
-#   unix socket listener support
-# capistrano - for running remote tasks and automated deployment
-# termios - ruby implementation of the termios password masker
-# sqlite3-ruby - bindings to the sqlite3 dbms
-# mysql - bindings to the mysql dbms
-# typo - rails blogging application
-# passenger - now for nginx!
-
-gem install rails thin capistrano termios sqlite3-ruby --no-rdoc --no-ri
-gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
-
-# The typo blog application currently requires rails version 2.2.2
-gem install rails -v '= 2.2.3' --no-rdoc --no-ri
-gem install typo --no-rdoc --no-ri
-
-gem install passenger --no-rdoc --no-ri
-
-###############################################################################
 # Git 1.6.5.3
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not. Git will be used to retrieve the
@@ -145,6 +92,68 @@ cd $PREFIX/share/man/
 wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.5.3.tar.gz
 tar xzvf git-manpages-1.6.5.3.tar.gz
 rm git-manpages-1.6.5.3.tar.gz
+
+###############################################################################
+# Select which ruby to use - Ruby Enterprise Edition or Ruby 1.8.7 subversion
+
+if [ $RUBYENTED == true ]
+then ##########################################################################
+
+# Ruby Enterprise Edition 1.8.7 - 2009.10
+# Reduces memory consumption of rails apps by up to 33% when used with Passenger.
+
+cd $PREFIX/src
+wget http://rubyforge.org/frs/download.php/66162/ruby-enterprise-1.8.7-2009.10.tar.gz
+tar xzvf ruby-enterprise-1.8.7-2009.10.tar.gz
+cd ruby-enterprise-1.8.7-2009.10
+./installer -a $PREFIX
+
+# Ensure RubyGems is up to date
+$PREFIX/bin/gem update --system
+
+# Gems installed with Ruby Enterprise Edition include: fastthread, mysql,
+# passenger, rack, rails, rake, rubygems-update, sqlite3-ruby.
+
+# Now let's install some more gems...
+gem install thin capistrano termios --no-rdoc --no-ri
+
+else ##########################################################################
+
+# Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
+# The good thing about having your own ruby install is that you can have the
+# most up to date version with security holes patched. You could also have
+# custom options enabled when the configure script is executed. I leave the
+# customization up to you, but it's fine as it is here.
+
+cd $PREFIX/src
+svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_7/
+cd ruby_1_8_7
+autoconf
+./configure --prefix=$PREFIX
+make
+make install
+#make install-doc # Documentation generation is ridiculously memory hungry!
+
+# RubyGems 1.3.5
+# By installing RubyGems in your private application environment, you have
+# total control over the gems you require. You can install, update, and
+# uninstall whatever gems you want without having to freeze gems in your rails
+# applications.
+
+cd $PREFIX/src
+wget http://rubyforge.org/frs/download.php/60718/rubygems-1.3.5.tgz
+tar xzvf rubygems-1.3.5.tgz
+cd rubygems-1.3.5
+$PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
+
+# Ensure RubyGems is up to date
+$PREFIX/bin/gem update --system
+
+# Install some gems...
+gem install rack rails thin passenger capistrano termios sqlite3-ruby --no-rdoc --no-ri
+gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
+
+fi ############################################################################
 
 ###############################################################################
 # Nginx 0.7.64
@@ -231,10 +240,9 @@ mkdir -p $PREFIX/var/spool/nginx
 ln -s $HOME/webapps $PREFIX/var/www
 
 ###############################################################################
-# Create a tmp directory in var. This is where I put the sockets for the thin
-# cluster. You might want to locate them in your rails application's
-# tmp/sockets directory, but you'll have to modify this script in a few
-# locations.
+# Create a tmp directory in var. This is where sockets go. Use unix sockets
+# where you can instead of ports. They provide lower latency and eliminate
+# unnecessary exposure.
 
 mkdir $PREFIX/var/tmp
 chmod 777 $PREFIX/var/tmp
@@ -344,26 +352,6 @@ EOF
 chmod 755 $PREFIX/etc/rc.d/nginx
 
 ###############################################################################
-# Before writing the configuration for nginx, let's build...
-# Monit 5.0.3
-# Monit is a watchdog that manages processes. It makes sure that processes are
-# running and that they behave.
-
-cd $PREFIX/src
-wget http://mmonit.com/monit/dist/monit-5.0.3.tar.gz
-tar xzvf monit-5.0.3.tar.gz
-cd monit-5.0.3
-./configure --prefix=$PREFIX
-make
-make install
-
-# Note [to self]: If configure fails, try:
-# ./configure --prefix=$PREFIX --without-ssl
-# I can't get monit to configure successfully with ssl on Debian, but
-# WebFaction uses RHEL on its older machines and CentOS on its newer ones.
-# Things should go without a hitch on WebFaction's machines; end users ignore.
-
-###############################################################################
 # Now let's create the nginx.conf file. It's based on the one created by Ezra
 # Zygmuntowicz. The user directive is commented out because the nginx
 # master process is not run by root. Therefore the worker processes must run by
@@ -424,8 +412,8 @@ http {
   gzip_proxied any;
   gzip_types text/plain text/html text/css application/x-javascript text/xml
              application/xml application/xml+rss text/javascript;
-
-  # reverse proxy clusters
+	
+	# reverse proxy clusters
   # upstream mongrel {
   #   # fair load balancing requires the nginx-upstream-fair module
   #   fair;
@@ -475,7 +463,7 @@ mkdir $PREFIX/etc/nginx/certs
 # server {
 #   listen 4321;
 #   server_name example.net www.example.net;
-#   rewrite ^ http://example.com$uri permanent;
+#   rewrite ^ $scheme://example.com$uri permanent;
 # }
 # 
 # server {
@@ -484,6 +472,22 @@ mkdir $PREFIX/etc/nginx/certs
 #   ...
 
 cat > $PREFIX/etc/nginx/vhosts/$APP_NAME.conf << EOF
+server {
+	listen $APP_PORT;
+  server_name example.com;
+  root $PREFIX/var/www/$APP_NAME/public;
+	passenger_enabled on;
+
+	# vhost specific access log
+  access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
+}
+EOF
+
+###############################################################################
+# Create a sample vhost file for using a thin cluster instead of passenger.
+# Because the extension is .example it will not be loaded when nginx starts.
+
+cat > $PREFIX/etc/nginx/vhosts/$APP_NAME-thin.conf.example << EOF
 server {
   # port to listen on (can also be IP:PORT)
   listen $APP_PORT;
@@ -546,15 +550,34 @@ EOF
 ###############################################################################
 # Create a sample https vhost file. You'll need to create SSL certificates
 # (see http://www.akadia.com/services/ssh_test_certificate.html on how) and
-# modify the conf according to your circumstances. It's named
-# https.conf.example so it won't be loaded when nginx is started. With
-# WebFaction, you probably aren't going to be doing https from nginx; it will
-# likely be done from Apache, which is the "spearhead" server. Both http and
-# https requests will land on a single nginx http vhost. You may need to create
-# a proxy header in the nginx conf file that differentiates between http and
-# https requests. If somebody could post a comment about how, that'd be great.
+# modify the conf according to your circumstances.
+
+# Since your private nginx is not the frontmost server, both http and https
+# requests will land on a single nginx http vhost. Therefore, you may need to
+# create a proxy header in the nginx conf file that differentiates between http
+# and https requests. You will have to see for yourself, since I haven't
+# personally worked this out.
 
 cat > $PREFIX/etc/nginx/vhosts/https.conf.example << EOF
+server {
+  listen 443;
+  root $PREFIX/var/www/$APP_NAME/public;
+	passenger_enabled on;
+
+  # vhost specific access log
+  access_log $PREFIX/var/log/nginx/https_access.log main;
+
+  # see http://rubyjudo.com/2006/11/2/nginx-ssl-rails
+  ssl on;
+  ssl_certificate $PREFIX/etc/nginx/certs/server.crt;
+  ssl_certificate_key $PREFIX/etc/nginx/certs/server.key;
+}
+EOF
+
+###############################################################################
+# Create a sample https vhost file for use with a thin cluster.
+
+cat > $PREFIX/etc/nginx/vhosts/https-thin.conf.example << EOF
 server {
   # port to listen on (can also be IP:PORT)
   listen 443;
@@ -618,9 +641,27 @@ server {
 EOF
 
 ###############################################################################
-# Create the monit rc script (from http://quaddro.net/rcscripts/rc.monit). This
-# file is deprecated because it doesn't offer any real advantages. It will
-# remain for now, however.
+# Monit 5.0.3
+# Monit is a watchdog that manages processes. It makes sure that processes are
+# running and that they behave.
+
+cd $PREFIX/src
+wget http://mmonit.com/monit/dist/monit-5.0.3.tar.gz
+tar xzvf monit-5.0.3.tar.gz
+cd monit-5.0.3
+./configure --prefix=$PREFIX
+make
+make install
+
+# Note to self:
+# If configure fails, try:
+# ./configure --prefix=$PREFIX --without-ssl
+# I can't get monit to configure successfully with ssl on Debian, but
+# WebFaction uses RHEL on its older machines and CentOS on its newer ones.
+# Things should go without a hitch on WebFaction's machines.
+
+###############################################################################
+# Create the monit rc script (from http://quaddro.net/rcscripts/rc.monit).
 
 cat > $PREFIX/etc/rc.d/monit << EOF
 #!/bin/sh
@@ -706,11 +747,11 @@ check process nginx
 EOF
 
 ###############################################################################
-# Create a monit configuration file for the thin servers. This is based on the
-# one that comes with the thin gem. It's located in the thin gem's examples
-# directory.
+# Create a sample monit configuration file for the thin servers. This is based
+# on the one that comes with the thin gem. It's located in the thin gem's
+# examples directory.
 
-cat > $PREFIX/etc/monit/$APP_NAME.monitrc << EOF
+cat > $PREFIX/etc/monit/$APP_NAME.monitrc.example << EOF
 check process ${APP_NAME}0
   with pidfile $PREFIX/var/www/$APP_NAME/tmp/pids/thin.0.pid
   start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.pid -o 0"
@@ -734,10 +775,10 @@ EOF
 
 ###############################################################################
 # Create the boot script. The script removes pid files from web app locations.
-# Thin will not start if it has orphaned pid files. The script will then start
-# monit which in turn will start up nginx and the thin servers. Be careful
-# running this script arbitrarily; you don't want to delete the pid files of
-# running processes!
+# Orphaned pid files will prevent applications like thin from starting. The
+# script will then start monit which in turn will start up nginx and any other
+# monitored application. Be careful running this script arbitrarily; you don't
+# want to delete the pid files of running processes!
 
 cat > $PREFIX/etc/rc.d/boot << EOF
 . \$HOME/.bash_profile
@@ -762,10 +803,29 @@ cat $PREFIX/var/tmp/oldcrontab >> $PREFIX/var/tmp/newcrontab
 crontab $PREFIX/var/tmp/newcrontab
 rm $PREFIX/var/tmp/oldcrontab $PREFIX/var/tmp/newcrontab
 
-# Note [to self]: crontab isn't working on my ArchLinux machine. The crontab
-# file works perfectly fine on WebFaction, so disregard this comment end users.
+# Note to self:
+# crontab isn't working on my ArchLinux machine. The crontab file works
+# perfectly fine on WebFaction, however.
 
 ###############################################################################
-# Fire up monit, nginx, and the thin servers!
+# Fire up the stack!
 
 monit
+
+# If you want to use thin instead of passenger:
+# 1. Move nginx vhost...
+# mv $PREFIX/etc/nginx/vhosts/$APP_NAME.conf $PREFIX/etc/nginx/vhosts/$APP_NAME-passenger.conf.example
+# mv $PREFIX/etc/nginx/vhosts/$APP_NAME-thin.conf.example $PREFIX/etc/nginx/vhosts/$APP_NAME.conf
+# 2. Move monitrc file...
+# mv $PREFIX/etc/monit/$APP_NAME.monitrc.example $PREFIX/etc/monit/$APP_NAME.monitrc
+# 3. Stop all and restart monit...
+# monit stop all
+# monit quit
+# monit
+# 4. Prevent passenger processes from starting up with nginx. You have to
+#    manually edit $PREFIX/etc/nginx/nginx.conf. Comment out the passenger
+#    directives: passenger_root (most importantly), passenger_ruby,
+#    passenger_max_pool_size, and any others.
+# 5. Also make sure that the upstream thin directive is uncommented in the
+#    nginx.conf file. I did not comment it out because it should not do any
+#    harm if not used.
