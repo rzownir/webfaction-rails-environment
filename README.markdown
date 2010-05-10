@@ -6,14 +6,14 @@ Essentially, the directories `$HOME/logs/user` and `$HOME/webapps/$APP_NAME`
 must exist before running the script.
 
 ## What's Provided
-* Git 1.6.5.3
-* Your choice of Ruby Enterprise Edition 1.8.7 - 2009.10 or Ruby 1.8.7 (latest
+* Git 1.7.1
+* Your choice of Ruby Enterprise Edition 1.8.7 - 2010.01 or Ruby 1.8.7 (latest
   from the 1.8.7 subversion branch)
 * Latest RubyGems
 * Gems: rack, rails, thin, passenger, capistrano, termios, sqlite3-ruby, mysql
-* nginx 0.7.64 (with nginx-upstream-fair module for fair load balancing and
+* nginx 0.7.65 (with nginx-upstream-fair module for fair load balancing and
   passenger module)
-* Monit 5.0.3
+* Monit 5.1.1
 * Startup scripts and working default configuration files for monit and nginx
 
 ## Recent Changes

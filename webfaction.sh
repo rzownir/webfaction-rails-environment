@@ -75,23 +75,23 @@ chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
 ###############################################################################
-# Git 1.6.5.3
+# Git 1.7.1
 # Git is a great source code management system. Subversion is already installed
 # on WebFaction's machines, but git is not. Git will be used to retrieve the
 # third party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.6.5.3.tar.gz
-tar xzvf git-1.6.5.3.tar.gz
-cd git-1.6.5.3
+wget http://kernel.org/pub/software/scm/git/git-1.7.1.tar.gz
+tar xzvf git-1.7.1.tar.gz
+cd git-1.7.1
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.6.5.3.tar.gz
-tar xzvf git-manpages-1.6.5.3.tar.gz
-rm git-manpages-1.6.5.3.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.7.1.tar.gz
+tar xzvf git-manpages-1.7.1.tar.gz
+rm git-manpages-1.7.1.tar.gz
 
 ###############################################################################
 # Select which ruby to use - Ruby Enterprise Edition or Ruby 1.8.7 subversion
@@ -99,13 +99,13 @@ rm git-manpages-1.6.5.3.tar.gz
 if [ $RUBYENTED == true ]
 then ##########################################################################
 
-# Ruby Enterprise Edition 1.8.7 - 2009.10
+# Ruby Enterprise Edition 1.8.7 - 2010.01
 # Reduces memory consumption of rails apps by up to 33% when used with Passenger.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/66162/ruby-enterprise-1.8.7-2009.10.tar.gz
-tar xzvf ruby-enterprise-1.8.7-2009.10.tar.gz
-cd ruby-enterprise-1.8.7-2009.10
+wget http://rubyforge.org/frs/download.php/68719/ruby-enterprise-1.8.7-2010.01.tar.gz
+tar xzvf ruby-enterprise-1.8.7-2010.01.tar.gz
+cd ruby-enterprise-1.8.7-2010.01
 ./installer -a $PREFIX
 
 # Ensure RubyGems is up to date
@@ -116,6 +116,12 @@ $PREFIX/bin/gem update --system
 
 # Now let's install some more gems...
 gem install thin capistrano termios --no-rdoc --no-ri
+
+# Update gems to make sure they're the most recent.
+gem update --no-rdoc --no-ri
+
+# Might want to clean out old gems
+#gem clean
 
 else ##########################################################################
 
@@ -134,16 +140,16 @@ make
 make install
 #make install-doc # Documentation generation is ridiculously memory hungry!
 
-# RubyGems 1.3.5
+# RubyGems 1.3.6
 # By installing RubyGems in your private application environment, you have
 # total control over the gems you require. You can install, update, and
 # uninstall whatever gems you want without having to freeze gems in your rails
 # applications.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/60718/rubygems-1.3.5.tgz
-tar xzvf rubygems-1.3.5.tgz
-cd rubygems-1.3.5
+wget http://production.cf.rubygems.org/rubygems/rubygems-1.3.6.tgz
+tar xzvf rubygems-1.3.6.tgz
+cd rubygems-1.3.6
 $PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
 
 # Ensure RubyGems is up to date
@@ -156,7 +162,7 @@ gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 fi ############################################################################
 
 ###############################################################################
-# Nginx 0.7.64
+# Nginx 0.7.65
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -179,20 +185,20 @@ fi ############################################################################
 export PASSENGER_ROOT=`passenger-config --root`
 
 cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-0.9.8l.tar.gz
-tar xzvf openssl-0.9.8l.tar.gz
-wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.00.tar.gz
-tar xzvf pcre-8.00.tar.gz
-wget http://www.zlib.net/zlib-1.2.3.tar.gz
-tar xzvf zlib-1.2.3.tar.gz
-wget http://sysoev.ru/nginx/nginx-0.7.64.tar.gz
-tar xzvf nginx-0.7.64.tar.gz
+wget http://www.openssl.org/source/openssl-1.0.0.tar.gz
+tar xzvf openssl-1.0.0.tar.gz
+wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.02.tar.gz
+tar xzvf pcre-8.02.tar.gz
+wget http://zlib.net/zlib-1.2.5.tar.gz
+tar xzvf zlib-1.2.5.tar.gz
+wget http://nginx.org/download/nginx-0.8.36.tar.gz
+tar xzvf nginx-0.8.36.tar.gz # Using development version because stable version not yet compatible with openssl 1.0.0 and zlib 1.2.5.
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.7.64
+cd nginx-0.7.65
 ./configure \
---with-pcre=$PREFIX/src/pcre-8.00 \
---with-zlib=$PREFIX/src/zlib-1.2.3 \
---with-openssl=$PREFIX/src/openssl-0.9.8l \
+--with-pcre=$PREFIX/src/pcre-8.02 \
+--with-zlib=$PREFIX/src/zlib-1.2.5 \
+--with-openssl=$PREFIX/src/openssl-1.0.0 \
 --with-http_ssl_module \
 --with-http_flv_module \
 --with-http_realip_module \
@@ -261,7 +267,7 @@ cat > $PREFIX/etc/rc.d/nginx << EOF
 #
 # Nginx daemon control script.
 # 
-# This is an init script for the nginx daemon.
+# This is an rc script for the nginx daemon.
 # To use nginx, you must first set up the config file(s).
 #
 # Written by Cherife Li <cherife@dotimes.com>.
@@ -361,74 +367,55 @@ cat > $PREFIX/etc/nginx/nginx.conf << EOF
 # user and group to run as
 #user $USER $USER;
 
-# number of nginx workers
 worker_processes  4;
 
-# location of nginx pid file
 pid $PREFIX/var/run/nginx.pid;
 
 events {
-  # 1024 worker connections is a good default value
   worker_connections 1024;
 }
 
 http {
 	passenger_root $PASSENGER_ROOT;
 	passenger_ruby $PREFIX/bin/ruby;
-	passenger_max_pool_size 2; # How many passenger instances can exist (default was 6)
-	
-	set_real_ip_from 192.168.1.101; # IP of server (should be external)
+	passenger_max_pool_size 4; # max total instances (default is 6)
+	passenger_max_instances_per_app 2;
+
+	set_real_ip_from 192.168.1.0/24; # [public] server IP
 	set_real_ip_from 127.0.0.1;
 	real_ip_header X-Real-IP;
-	
-  # pull in mime types
-  include $PREFIX/etc/nginx/mime.types;
 
-  # set the default mime type
+  include $PREFIX/etc/nginx/mime.types;
   default_type application/octet-stream;
 
-  # define the 'main' log format
   log_format main '\$remote_addr - \$remote_user [\$time_local] '
                   '"\$request" \$status \$body_bytes_sent "\$http_referer" '
                   '"\$http_user_agent" "\$http_x_forwarded_for"';
-
-  # location of server access log file
   access_log $PREFIX/var/log/nginx/access.log main;
-
-  # location of server error log file
   error_log  $PREFIX/var/log/nginx/error.log  debug;
 
-  # turn sendfile off on Mac OS X
-  sendfile on;
+  sendfile on; # turn off on Mac OS X
 
-  # good default values
   tcp_nopush on;
   tcp_nodelay off;
 
-  # output commpression saves bandwidth
   gzip on;
   gzip_http_version 1.0;
-  gzip_comp_level 2;
+  gzip_buffers 16 8k;
+  gzip_comp_level 5;
   gzip_proxied any;
-  gzip_types text/plain text/html text/css application/x-javascript text/xml
-             application/xml application/xml+rss text/javascript;
-	
-	# reverse proxy clusters
-  # upstream mongrel {
-  #   # fair load balancing requires the nginx-upstream-fair module
-  #   fair;
-  #   server 127.0.0.1:5000;
-  #   server 127.0.0.1:5001;
-  #   server 127.0.0.1:5002;
-  # }
+  gzip_types text/plain text/css application/x-javascript text/xml application/rss+xml;
 
+	# reverse proxy clusters
   upstream thin {
-    fair;
+    fair; # requires nginx-upstream-fair module
     server unix:$PREFIX/var/tmp/thin.0.sock;
     server unix:$PREFIX/var/tmp/thin.1.sock;
+	  #server 127.0.0.1:5000;
+	  #server 127.0.0.1:5001;
+	  #server 127.0.0.1:5002;
   }
-	
-  # load vhost configuration files
+
   include $PREFIX/etc/nginx/vhosts/*.conf;
 }
 EOF
@@ -605,10 +592,10 @@ server {
   location / {
     # set headers for passing the request to the backend
     proxy_set_header X-FORWARDED_PROTO https;
-    proxy_set_header  X-Real-IP  \$remote_addr;
-    proxy_set_header  X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header Host \$http_host;
-    proxy_redirect false;
+    proxy_set_header X-Real-IP         \$remote_addr;
+    proxy_set_header X-Forwarded-For   \$proxy_add_x_forwarded_for;
+    proxy_set_header Host              \$http_host;
+    proxy_redirect   false;
     proxy_max_temp_file_size 0;
     
     # serve the static file if it exists
@@ -641,14 +628,14 @@ server {
 EOF
 
 ###############################################################################
-# Monit 5.0.3
+# Monit 5.1.1
 # Monit is a watchdog that manages processes. It makes sure that processes are
 # running and that they behave.
 
 cd $PREFIX/src
-wget http://mmonit.com/monit/dist/monit-5.0.3.tar.gz
-tar xzvf monit-5.0.3.tar.gz
-cd monit-5.0.3
+wget http://mmonit.com/monit/dist/monit-5.1.1.tar.gz
+tar xzvf monit-5.1.1.tar.gz
+cd monit-5.1.1
 ./configure --prefix=$PREFIX
 make
 make install
@@ -672,7 +659,7 @@ cat > $PREFIX/etc/rc.d/monit << EOF
 #
 MONIT=$PREFIX/bin/monit
 
-monit_start() { 
+monit_start() {
   \$MONIT
 }
 monit_stop() {
@@ -739,7 +726,7 @@ check process nginx
   with pidfile $PREFIX/var/run/nginx.pid
   start program "$PREFIX/etc/rc.d/nginx start"
   stop program "$PREFIX/etc/rc.d/nginx stop"
-  if totalmem > 25.0 MB for 5 cycles then restart
+  if totalmem > 15.0 MB for 5 cycles then restart
   if failed port $APP_PORT then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
