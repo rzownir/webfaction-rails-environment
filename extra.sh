@@ -22,10 +22,10 @@ make
 make install
 
 cd $PREFIX/src
-wget http://download.tangent.org/libmemcached-0.38.tar.gz
-tar xzvf libmemcached-0.38.tar.gz
-cd libmemcached-0.38
-export CFLAGS="-march=i686" # Fixes compile problem found in 0.38
+wget http://launchpad.net/libmemcached/1.0/0.43/+download/libmemcached-0.43.tar.gz
+tar xzvf libmemcached-0.43.tar.gz
+cd libmemcached-0.43
+export CFLAGS="-march=i686" # Fixes compile problem found in 0.38 (may not by necessary now)
 ./configure --prefix=$PREFIX
 make
 make install
@@ -42,12 +42,12 @@ gem install memcached --no-rdoc --no-ri
 ldconfig $PREFIX/lib
 
 ###############################################################################
-# Erlang R13B04
+# Erlang R14A
 
 cd $PREFIX/src
-wget http://www.erlang.org/download/otp_src_R13B04.tar.gz
-tar xzvf otp_src_R13B04.tar.gz
-cd otp_src_R13B04
+wget http://www.erlang.org/download/otp_src_R14A.tar.gz
+tar xzvf otp_src_R14A.tar.gz
+cd otp_src_R14A
 ./configure --prefix=$PREFIX #--enable-darwin-64bit # Mac OS X >=10.6
 make
 make install
@@ -56,7 +56,9 @@ make install
 # CouchDB (requires Erlang)
 
 # Mozilla SpiderMonkey
-# The latest source is in http://hg.mozilla.org/mozilla-central/archive/tip.tar.gz
+# The latest source is in http://hg.mozilla.org/mozilla-central/archive/tip.tar.gz.
+# But we'll stick to the version last released independently and not buried inside
+# a much larger project!
 
 cd $PREFIX/src
 wget http://ftp.mozilla.org/pub/mozilla.org/js/js-1.8.0-rc1.tar.gz
@@ -79,22 +81,17 @@ make
 make install
 
 cd $PREFIX/src
-wget http://curl.haxx.se/download/curl-7.20.1.tar.gz
-tar xzvf curl-7.20.1.tar.gz
-cd curl-7.20.1
+wget http://curl.haxx.se/download/curl-7.21.1.tar.gz
+tar xzvf curl-7.21.1.tar.gz
+cd curl-7.21.1
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://mirror.its.uidaho.edu/pub/apache/couchdb/0.11.0/apache-couchdb-0.11.0.tar.gz
-tar xzvf apache-couchdb-0.11.0.tar.gz
-cd apache-couchdb-0.11.0
+wget http://apache.ziply.com/couchdb/1.0.1/apache-couchdb-1.0.1.tar.gz
+tar xzvf apache-couchdb-1.0.1.tar.gz
+cd apache-couchdb-1.0.1
 ./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 make
 make install
-
-# CouchDB 0.11.0 isn't working. Getting an error at startup 
-# "/home/rzownir/apps/etc/couchdb/default.ini"
-# "/home/rzownir/apps/etc/couchdb/local.ini"
-# "libicuuc.so.44: cannot open shared object file: No such file or directory"

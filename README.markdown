@@ -6,12 +6,12 @@ Essentially, the directories `$HOME/logs/user` and `$HOME/webapps/$APP_NAME`
 must exist before running the script.
 
 ## What's Provided
-* Git 1.7.1
-* Your choice of Ruby Enterprise Edition 1.8.7 - 2010.01 or Ruby 1.8.7 (latest
+* Git 1.7.2.3
+* Your choice of Ruby Enterprise Edition 1.8.7 - 2010.02 or Ruby 1.8.7 (latest
   from the 1.8.7 subversion branch)
 * Latest RubyGems
 * Gems: rack, rails, thin, passenger, capistrano, termios, sqlite3-ruby, mysql
-* nginx 0.7.65 (with nginx-upstream-fair module for fair load balancing and
+* nginx 0.7.67 (with nginx-upstream-fair module for fair load balancing and
   passenger module)
 * Monit 5.1.1
 * Startup scripts and working default configuration files for monit and nginx
@@ -38,7 +38,7 @@ thin stack. See below.
        and thin processes, execute `rm -rf $HOME/apps` and start over fresh.
      * `APP_NAME` is the name of the app created in step one. The path
        `$HOME/webapps/$APP_NAME` should exist and contain at least a skeleton
-       app. The default value for `APP_NAME` is `blog`.
+       app. The default value for `APP_NAME` is `myrailsapp`.
      * `APP_PORT` is the port WebFaction assigned to the app created in step
        one. The default value is `4000`.
      * `MONIT_PORT` is the port WebFaction assigned to the app created in step
@@ -47,9 +47,9 @@ thin stack. See below.
    edit line 12 of the script to read `export RUBYENTED=false`
 
 ## After Running the Script
-If no unforeseen errors occurred, your rails app will be up and running in
-production mode. Of course, `$HOME/webapps/$APP_NAME` must contain a
-valid app for this to be true, even if it's just a skeleton.
+If no errors occurred, your rails app will be up and running in the production
+environment. Of course, `$HOME/webapps/$APP_NAME` must contain a valid app for
+this to happen, even if it's just a skeleton.
 
 By default passenger serves up the app. This can be easily changed so that two
 thin instances are set up listening on unix sockets (mongrel does not have this
@@ -80,6 +80,7 @@ Quit all processes and restart monit...
 
 	monit stop all
 	monit quit
+	sleep 5
 	monit
 
 Prevent passenger processes from starting up with nginx. You have to manually
@@ -92,9 +93,12 @@ file. I didn't comment it out to begin with because it doesn't do any harm if
 it goes unused.
 
 ## Other Notes
-Although the passenger stack uses less physical memory, the rss is often higher. This is because of multiple counting. Depending on how WebFaction meters memory usage, this could be a practical downside.
+Although the passenger stack uses less physical memory, the rss is often higher.
+This is because of multiple counting. Depending on how WebFaction meters memory
+usage, this could be a practical downside.
 
-To compare your total rss vs your total private dirty rss (physical memory usage) run these commands:
+To compare your total rss vs your total private dirty rss (physical memory usage)
+run these commands:
 
 	ps -u $USER -o rss | grep -v peruser | awk '{sum+=$1} END {printf("\n%.0fMB total RSS\n", sum/1024)}'
 	(ps -u $USER -o pid | awk '{ print "grep Private_Dirty /proc/"$1"/smaps" }' | sh | awk '{ sum += $2 } END { printf("%.0fMB total Private Dirty RSS\n\n", sum/1024) }') 2>/dev/null

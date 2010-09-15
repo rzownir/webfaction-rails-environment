@@ -6,7 +6,7 @@
 ###############################################################################
 # Edit these variables as instructed in the README.
 export PREFIX=$HOME/apps
-export APP_NAME=blog
+export APP_NAME=myrailsapp
 export APP_PORT=4000
 export MONIT_PORT=4002
 export RUBYENTED=true
@@ -75,23 +75,22 @@ chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
 ###############################################################################
-# Git 1.7.1
-# Git is a great source code management system. Subversion is already installed
-# on WebFaction's machines, but git is not. Git will be used to retrieve the
-# third party nginx-upstream-fair module for nginx.
+# Git 1.7.2.3
+# Git is a great source code management system. Git will be used to retrieve
+# the third party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.7.1.tar.gz
-tar xzvf git-1.7.1.tar.gz
-cd git-1.7.1
+wget http://kernel.org/pub/software/scm/git/git-1.7.2.3.tar.gz
+tar xzvf git-1.7.2.3.tar.gz
+cd git-1.7.2.3
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.7.1.tar.gz
-tar xzvf git-manpages-1.7.1.tar.gz
-rm git-manpages-1.7.1.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.7.2.3.tar.gz
+tar xzvf git-manpages-1.7.2.3.tar.gz
+rm git-manpages-1.7.2.3.tar.gz
 
 ###############################################################################
 # Select which ruby to use - Ruby Enterprise Edition or Ruby 1.8.7 subversion
@@ -99,13 +98,13 @@ rm git-manpages-1.7.1.tar.gz
 if [ $RUBYENTED == true ]
 then ##########################################################################
 
-# Ruby Enterprise Edition 1.8.7 - 2010.01
+# Ruby Enterprise Edition 1.8.7 - 2010.02
 # Reduces memory consumption of rails apps by up to 33% when used with Passenger.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/68719/ruby-enterprise-1.8.7-2010.01.tar.gz
-tar xzvf ruby-enterprise-1.8.7-2010.01.tar.gz
-cd ruby-enterprise-1.8.7-2010.01
+wget http://rubyforge.org/frs/download.php/71096/ruby-enterprise-1.8.7-2010.02.tar.gz
+tar xzvf ruby-enterprise-1.8.7-2010.02.tar.gz
+cd ruby-enterprise-1.8.7-2010.02
 ./installer -a $PREFIX
 
 # Ensure RubyGems is up to date
@@ -140,16 +139,16 @@ make
 make install
 #make install-doc # Documentation generation is ridiculously memory hungry!
 
-# RubyGems 1.3.6
+# RubyGems 1.3.7
 # By installing RubyGems in your private application environment, you have
 # total control over the gems you require. You can install, update, and
 # uninstall whatever gems you want without having to freeze gems in your rails
 # applications.
 
 cd $PREFIX/src
-wget http://production.cf.rubygems.org/rubygems/rubygems-1.3.6.tgz
-tar xzvf rubygems-1.3.6.tgz
-cd rubygems-1.3.6
+wget http://production.cf.rubygems.org/rubygems/rubygems-1.3.7.tgz
+tar xzvf rubygems-1.3.7.tgz
+cd rubygems-1.3.7
 $PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
 
 # Ensure RubyGems is up to date
@@ -162,7 +161,7 @@ gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 fi ############################################################################
 
 ###############################################################################
-# Nginx 0.7.65
+# Nginx 0.7.67
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -185,20 +184,20 @@ fi ############################################################################
 export PASSENGER_ROOT=`passenger-config --root`
 
 cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-1.0.0.tar.gz
-tar xzvf openssl-1.0.0.tar.gz
-wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.02.tar.gz
-tar xzvf pcre-8.02.tar.gz
+wget http://www.openssl.org/source/openssl-1.0.0a.tar.gz
+tar xzvf openssl-1.0.0a.tar.gz
+wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.10.tar.gz
+tar xzvf pcre-8.10.tar.gz
 wget http://zlib.net/zlib-1.2.5.tar.gz
 tar xzvf zlib-1.2.5.tar.gz
-wget http://nginx.org/download/nginx-0.8.36.tar.gz
-tar xzvf nginx-0.8.36.tar.gz # Using development version because stable version not yet compatible with openssl 1.0.0 and zlib 1.2.5.
+wget http://nginx.org/download/nginx-0.7.67.tar.gz
+tar xzvf nginx-0.7.67.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.7.65
+cd nginx-0.7.67
 ./configure \
---with-pcre=$PREFIX/src/pcre-8.02 \
+--with-pcre=$PREFIX/src/pcre-8.10 \
 --with-zlib=$PREFIX/src/zlib-1.2.5 \
---with-openssl=$PREFIX/src/openssl-1.0.0 \
+--with-openssl=$PREFIX/src/openssl-1.0.0a \
 --with-http_ssl_module \
 --with-http_flv_module \
 --with-http_realip_module \
@@ -381,7 +380,7 @@ http {
 	passenger_max_pool_size 4; # max total instances (default is 6)
 	passenger_max_instances_per_app 2;
 
-	set_real_ip_from 192.168.1.0/24; # [public] server IP
+	set_real_ip_from 192.168.1.0/24; # [public] server IP (change this to your specific IP)
 	set_real_ip_from 127.0.0.1;
 	real_ip_header X-Real-IP;
 
@@ -543,7 +542,7 @@ EOF
 # requests will land on a single nginx http vhost. Therefore, you may need to
 # create a proxy header in the nginx conf file that differentiates between http
 # and https requests. You will have to see for yourself, since I haven't
-# personally worked this out.
+# worked this out myself.
 
 cat > $PREFIX/etc/nginx/vhosts/https.conf.example << EOF
 server {
