@@ -471,12 +471,10 @@ mkdir $PREFIX/etc/nginx/certs
 cat > $PREFIX/etc/nginx/vhosts/$APP_NAME.conf << EOF
 server {
   listen $APP_PORT;
-  server_name example.com;
+  server_name .example.com; # Change this or comment it out
+	access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
   root $PREFIX/var/www/$APP_NAME/public;
   passenger_enabled on;
-
-  # vhost specific access log
-  access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
 }
 EOF
 
@@ -486,55 +484,24 @@ EOF
 
 cat > $PREFIX/etc/nginx/vhosts/$APP_NAME-thin.conf.example << EOF
 server {
-  # port to listen on (can also be IP:PORT)
-  listen $APP_PORT;
-
-  # domain(s) this vhost serves requests for
-  #server_name example.com www.example.com;
-
-  # vhost specific access log
+  listen $APP_PORT; # Can also be IP:PORT
+  server_name .example.com;
   access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
-
-  # doc root
   root $PREFIX/var/www/$APP_NAME/public;
 
-  # set the max size for file uploads to 20Mb
-  client_max_body_size 20M;
-
-  # with capistrano's disable web task, rewrite all requests to maintenance.html
-  if (-f \$document_root/system/maintenance.html) {
-    rewrite  ^(.*)\$  /system/maintenance.html last;
-    break;
-  }
+  client_max_body_size 20M; # Max size for file uploads
 
   location / {
-    # set headers for passing the request to the backend
-    proxy_set_header  X-Real-IP  \$remote_addr;
+    try_files /system/maintenance.html \$uri \$uri/index.html \$uri.html @backend;
+  }
+
+  location @backend {
+    proxy_set_header  X-Real-IP       \$remote_addr;
     proxy_set_header  X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header Host \$http_host;
+    proxy_set_header  Host            \$http_host;
     proxy_redirect false;
     proxy_max_temp_file_size 0;
-
-    # serve the static file if it exists
-    if (-f \$request_filename) { 
-      break; 
-    }
-
-    # serve static directory index if it exists
-    if (-f \$request_filename/index.html) {
-      rewrite (.*) \$1/index.html break;
-    }
-
-    # necessary rule for rails page caching
-    if (-f \$request_filename.html) {
-      rewrite (.*) \$1.html break;
-    }
-
-    # set necessary headers and pass the request to the upstream cluster
-    if (!-f \$request_filename) {
-      proxy_pass http://thin;
-      break;
-    }
+    proxy_pass http://thin;
   }
 
   error_page 500 502 503 504 /500.html;
@@ -558,13 +525,11 @@ EOF
 cat > $PREFIX/etc/nginx/vhosts/https.conf.example << EOF
 server {
   listen 443;
+  access_log $PREFIX/var/log/nginx/https_access.log main;
   root $PREFIX/var/www/$APP_NAME/public;
   passenger_enabled on;
 
-  # vhost specific access log
-  access_log $PREFIX/var/log/nginx/https_access.log main;
-
-  # see http://rubyjudo.com/2006/11/2/nginx-ssl-rails
+  # See http://rubyjudo.com/2006/11/2/nginx-ssl-rails
   ssl on;
   ssl_certificate $PREFIX/etc/nginx/certs/server.crt;
   ssl_certificate_key $PREFIX/etc/nginx/certs/server.key;
@@ -576,58 +541,29 @@ EOF
 
 cat > $PREFIX/etc/nginx/vhosts/https-thin.conf.example << EOF
 server {
-  # port to listen on (can also be IP:PORT)
-  listen 443;
+  listen 443; # Probably going to use IP:443
+  access_log $PREFIX/var/log/nginx/https_access.log main;
+  root $PREFIX/var/www/$APP_NAME/public;
 
-  # see http://rubyjudo.com/2006/11/2/nginx-ssl-rails
+  client_max_body_size 20M; # Max size for file uploads
+
+  # See http://rubyjudo.com/2006/11/2/nginx-ssl-rails
   ssl on;
   ssl_certificate $PREFIX/etc/nginx/certs/server.crt;
   ssl_certificate_key $PREFIX/etc/nginx/certs/server.key;
 
-  # vhost specific access log
-  access_log $PREFIX/var/log/nginx/https_access.log main;
-
-  # doc root
-  root $PREFIX/var/www/$APP_NAME/public;
-
-  # set the max size for file uploads to 20Mb
-  client_max_body_size 20M;
-
-  # with capistrano's disable web task, rewrite all requests to maintenance.html
-  if (-f \$document_root/system/maintenance.html) {
-    rewrite  ^(.*)\$  /system/maintenance.html last;
-    break;
+  location / {
+    try_files /system/maintenance.html \$uri \$uri/index.html \$uri.html @backend;
   }
 
-  location / {
-    # set headers for passing the request to the backend
+  location @backend {
     proxy_set_header X-FORWARDED_PROTO https;
     proxy_set_header X-Real-IP         \$remote_addr;
     proxy_set_header X-Forwarded-For   \$proxy_add_x_forwarded_for;
     proxy_set_header Host              \$http_host;
-    proxy_redirect   false;
+    proxy_redirect false;
     proxy_max_temp_file_size 0;
-    
-    # serve the static file if it exists
-    if (-f \$request_filename) { 
-      break; 
-    }
-
-    # serve static directory index if it exists
-    if (-f \$request_filename/index.html) {
-      rewrite (.*) \$1/index.html break;
-    }
-
-    # necessary rule for rails page caching
-    if (-f \$request_filename.html) {
-      rewrite (.*) \$1.html break;
-    }
-
-    # set necessary headers and pass the request to the upstream cluster
-    if (!-f \$request_filename) {
-      proxy_pass http://thin;
-      break;
-    }
+    proxy_pass http://thin;
   }
 
   error_page 500 502 503 504 /500.html;
