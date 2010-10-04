@@ -182,12 +182,13 @@ fi #---------------------------------------------------------------------------
 #
 # Here we download the sources for openssl, pcre, zlib, and nginx and git clone
 # the nginx-upstream-fair module. Nginx will be compiled with the help of the
-# other sources. Three other modules will be built into nginx: http_ssl_module,
-# http_flv_module, and http_realip_module. The first provides support for
-# https, the second enables streaming flash videos, and the third allows you to
-# configure the real source IP if nginx isn't the spearhead frontend server.
-# You don't have to install the three aforementioned modules, but it's a good
-# idea to. Just make sure to include the nginx-upstream-fair module.
+# other sources. Four other modules will be built into nginx: http_realip_module,
+# http_gzip_static_module, http_ssl_module, and http_flv_module. The first allows
+# you to establish the real source IP if nginx isn't the frontend server. The
+# second allows you to serve pre-compressed .gz files. The third provides support
+# for https. The fourth enables the streaming of flash videos. You don't have to
+# install the three aforementioned modules, but it's a good idea to. Just make
+# sure to include the nginx-upstream-fair module.
 
 export PASSENGER_ROOT=`passenger-config --root`
 
@@ -206,9 +207,10 @@ cd nginx-0.8.52
 --with-pcre=$PREFIX/src/pcre-8.10 \
 --with-zlib=$PREFIX/src/zlib-1.2.5 \
 --with-openssl=$PREFIX/src/openssl-1.0.0a \
+--with-http_realip_module \
+--with-http_gzip_static_module \
 --with-http_ssl_module \
 --with-http_flv_module \
---with-http_realip_module \
 --add-module=$PREFIX/src/nginx-upstream-fair \
 --add-module=$PASSENGER_ROOT/ext/nginx \
 --prefix=$PREFIX \
@@ -410,6 +412,7 @@ http {
   tcp_nodelay off;
 
   gzip on;
+	gzip_static on;
   gzip_http_version 1.0;
   gzip_buffers 16 8k;
   gzip_comp_level 5;
