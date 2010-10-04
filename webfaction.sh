@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# WebFaction Ruby on Rails Stack Builder
+# WebFaction Application Stack Build Script
 # (c) 2008-2010 - Ronald M. Zownir
 
 ###############################################################################
@@ -31,10 +31,10 @@ EOF
 
 ###############################################################################
 # Back up $HOME/.bashrc and write a new file. Extend $PATH to include the paths
-# of the private application environment binaries. If you're wondering why the
-# PATH is defined in $HOME/.bashrc and not $HOME/.bash_profile, it's because
-# only $HOME/.bashrc is loaded when executing automated/remote commands not
-# running in an interactive terminal.
+# of the private application environment binaries. PATH is defined in
+# $HOME/.bashrc and not $HOME/.bash_profile, it's because only $HOME/.bashrc is
+# loaded when executing automated/remote commands not running in an interactive
+# terminal.
 
 mv $HOME/.bashrc $HOME/.bashrc.old
 
@@ -48,7 +48,7 @@ fi
 
 # User specific aliases and functions
 PREFIX=$PREFIX
-PATH=\$PREFIX/bin:\$PREFIX/sbin:\$PATH
+export PATH=\$PREFIX/bin:\$PREFIX/sbin:\$PATH
 EOF
 
 ###############################################################################
@@ -93,10 +93,23 @@ tar xzvf git-manpages-1.7.2.3.tar.gz
 rm git-manpages-1.7.2.3.tar.gz
 
 ###############################################################################
-# Select which ruby to use - Ruby Enterprise Edition or Ruby 1.8.7 subversion
+# SQLite3 3.7.2
+# The latest sqlite3-ruby gem requires a version of SQLite3 that may be newer
+# than what is on your system. Here's how to install your own up-to-date copy.
+
+cd $PREFIX/src
+wget http://www.sqlite.org/sqlite-amalgamation-3.7.2.tar.gz
+tar xzvf sqlite-amalgamation-3.7.2.tar.gz
+cd sqlite-3.7.2
+./configure --prefix=$PREFIX
+make
+make install
+
+###############################################################################
+# Install either Ruby Enterprise Edition or Ruby 1.8.7 subversion
 
 if [ $RUBYENTED == true ]
-then ##########################################################################
+then #-------------------------------------------------------------------------
 
 # Ruby Enterprise Edition 1.8.7 - 2010.02
 # Reduces memory consumption of rails apps by up to 33% when used with Passenger.
@@ -110,25 +123,24 @@ cd ruby-enterprise-1.8.7-2010.02
 # Ensure RubyGems is up to date
 $PREFIX/bin/gem update --system
 
-# Gems installed with Ruby Enterprise Edition include: fastthread, mysql,
-# passenger, rack, rails, rake, rubygems-update, sqlite3-ruby.
+# Gems installed with REE include: fastthread, mysql, passenger, rack, rails,
+# rake, rubygems-update, sqlite3-ruby.
 
-# Now let's install some more gems...
+# Install some more gems...
 gem install thin capistrano termios --no-rdoc --no-ri
+gem install sqlite3-ruby -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
 
-# Update gems to make sure they're the most recent.
+# Ensure gems installed with REE are current
 gem update --no-rdoc --no-ri
 
 # Might want to clean out old gems
 #gem clean
 
-else ##########################################################################
+else #-------------------------------------------------------------------------
 
 # Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
-# The good thing about having your own ruby install is that you can have the
-# most up to date version with security holes patched. You could also have
-# custom options enabled when the configure script is executed. I leave the
-# customization up to you, but it's fine as it is here.
+# The latest version with security holes patched. Add custom configure options
+# as you see fit before running this script.
 
 cd $PREFIX/src
 svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_7/
@@ -137,14 +149,9 @@ autoconf
 ./configure --prefix=$PREFIX
 make
 make install
-#make install-doc # Documentation generation is ridiculously memory hungry!
+#make install-doc # Documentation generation is memory intensive!
 
 # RubyGems 1.3.7
-# By installing RubyGems in your private application environment, you have
-# total control over the gems you require. You can install, update, and
-# uninstall whatever gems you want without having to freeze gems in your rails
-# applications.
-
 cd $PREFIX/src
 wget http://production.cf.rubygems.org/rubygems/rubygems-1.3.7.tgz
 tar xzvf rubygems-1.3.7.tgz
@@ -155,13 +162,14 @@ $PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
 $PREFIX/bin/gem update --system
 
 # Install some gems...
-gem install rack rails thin passenger capistrano termios sqlite3-ruby --no-rdoc --no-ri
+gem install rack rails thin passenger capistrano termios --no-rdoc --no-ri
+gem install sqlite3-ruby -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
 gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 
-fi ############################################################################
+fi #---------------------------------------------------------------------------
 
 ###############################################################################
-# Nginx 0.7.67
+# Nginx 0.8.52
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -190,10 +198,10 @@ wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.10.tar.gz
 tar xzvf pcre-8.10.tar.gz
 wget http://zlib.net/zlib-1.2.5.tar.gz
 tar xzvf zlib-1.2.5.tar.gz
-wget http://nginx.org/download/nginx-0.7.67.tar.gz
-tar xzvf nginx-0.7.67.tar.gz
+wget http://nginx.org/download/nginx-0.8.52.tar.gz
+tar xzvf nginx-0.8.52.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.7.67
+cd nginx-0.8.52
 ./configure \
 --with-pcre=$PREFIX/src/pcre-8.10 \
 --with-zlib=$PREFIX/src/zlib-1.2.5 \
@@ -211,7 +219,9 @@ cd nginx-0.7.67
 --lock-path=$PREFIX/var/run/nginx.lock \
 --http-client-body-temp-path=$PREFIX/var/spool/nginx/client_body_temp \
 --http-proxy-temp-path=$PREFIX/var/spool/nginx/proxy_temp \
---http-fastcgi-temp-path=$PREFIX/var/spool/nginx/fastcgi_temp
+--http-fastcgi-temp-path=$PREFIX/var/spool/nginx/fastcgi_temp \
+--http-uwsgi-temp-path=$PREFIX/var/spool/nginx/uwsgi_temp \
+--http-scgi-temp-path=$PREFIX/var/spool/nginx/scgi_temp
 make
 make install
 
@@ -232,8 +242,8 @@ mkdir $PREFIX/var/log/nginx
 
 ###############################################################################
 # Create the necessary directory structure for client_body_temp, proxy_temp,
-# and fastcgi_temp directories. Nginx will create those directories for us when
-# it runs.
+# fastcgi_temp, uwsgi_temp, and scgi_temp directories. Nginx will create those
+# directories for us when it runs.
 
 mkdir -p $PREFIX/var/spool/nginx
 
@@ -259,7 +269,7 @@ mkdir $PREFIX/etc/rc.d
 
 ###############################################################################
 # Create the nginx rc script. I improved the second if structure in nginx_start
-# so that an orphan nginx pid file does not pose a problem.
+# so that an orphan nginx pid file does not cause a problem.
 
 cat > $PREFIX/etc/rc.d/nginx << EOF
 #!/bin/sh
@@ -357,10 +367,9 @@ EOF
 chmod 755 $PREFIX/etc/rc.d/nginx
 
 ###############################################################################
-# Now let's create the nginx.conf file. It's based on the one created by Ezra
-# Zygmuntowicz. The user directive is commented out because the nginx
-# master process is not run by root. Therefore the worker processes must run by
-# nobody, the default user.
+# Create the nginx.conf file, based on the one by Ezra Zygmuntowicz. The user
+# directive is commented out because the nginx master process is not run by
+# root. Therefore, the worker processes are run by nobody, the default user.
 
 cat > $PREFIX/etc/nginx/nginx.conf << EOF
 # user and group to run as
@@ -375,18 +384,20 @@ events {
 }
 
 http {
-	passenger_root $PASSENGER_ROOT;
-	passenger_ruby $PREFIX/bin/ruby;
-	passenger_max_pool_size 4; # max total instances (default is 6)
-	passenger_max_instances_per_app 2;
+  passenger_root $PASSENGER_ROOT;
+  passenger_ruby $PREFIX/bin/ruby;
+  passenger_max_pool_size 4; # max total instances (default is 6)
+  passenger_max_instances_per_app 2;
 
-	set_real_ip_from 192.168.1.0/24; # [public] server IP (change this to your specific IP)
-	set_real_ip_from 127.0.0.1;
-	real_ip_header X-Real-IP;
+  set_real_ip_from 192.168.1.0/24; # [public] server IP (change this to your IP)
+  set_real_ip_from 127.0.0.1;
+  real_ip_header X-Real-IP;
 
   include $PREFIX/etc/nginx/mime.types;
   default_type application/octet-stream;
 
+  # might need to substitute $http_x_forwarded_for for $remote_addr if $remote_addr
+  # turns out to be 127.0.0.1
   log_format main '\$remote_addr - \$remote_user [\$time_local] '
                   '"\$request" \$status \$body_bytes_sent "\$http_referer" '
                   '"\$http_user_agent" "\$http_x_forwarded_for"';
@@ -405,14 +416,14 @@ http {
   gzip_proxied any;
   gzip_types text/plain text/css application/x-javascript text/xml application/rss+xml;
 
-	# reverse proxy clusters
+  # reverse proxy clusters
   upstream thin {
     fair; # requires nginx-upstream-fair module
     server unix:$PREFIX/var/tmp/thin.0.sock;
     server unix:$PREFIX/var/tmp/thin.1.sock;
-	  #server 127.0.0.1:5000;
-	  #server 127.0.0.1:5001;
-	  #server 127.0.0.1:5002;
+    #server 127.0.0.1:5000;
+    #server 127.0.0.1:5001;
+    #server 127.0.0.1:5002;
   }
 
   include $PREFIX/etc/nginx/vhosts/*.conf;
@@ -431,7 +442,7 @@ mkdir $PREFIX/etc/nginx/certs
 # would normally assign them each a name using the server_name directive.
 # Because ssl certificates validated by a Certificate Authority are pegged
 # to an IP address rather than a domain or subdomain, the server_name
-# directive is virtually irrelevant for https vhosts. For http vhosts however,
+# directive is practically irrelevant for https vhosts. For http vhosts however,
 # the directive differentiates vhosts listening on a single port by the domain
 # name used to reach the server. The server_name doesn't really matter unless
 # you want to make such a distinction. WebFaction uses the Apache equivalent to
@@ -445,10 +456,10 @@ mkdir $PREFIX/etc/nginx/certs
 # (more specifically the same port) as configured on the sites page of the
 # WebFaction control panel. Here's how to do that in a vhost conf file:
 #
-# Permanently moving address from example.net or www.example.net to example.com
+# Permanently move address from www.example.com to example.com
 # server {
 #   listen 4321;
-#   server_name example.net www.example.net;
+#   server_name www.example.com;
 #   rewrite ^ $scheme://example.com$uri permanent;
 # }
 # 
@@ -459,12 +470,12 @@ mkdir $PREFIX/etc/nginx/certs
 
 cat > $PREFIX/etc/nginx/vhosts/$APP_NAME.conf << EOF
 server {
-	listen $APP_PORT;
+  listen $APP_PORT;
   server_name example.com;
   root $PREFIX/var/www/$APP_NAME/public;
-	passenger_enabled on;
+  passenger_enabled on;
 
-	# vhost specific access log
+  # vhost specific access log
   access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
 }
 EOF
@@ -548,7 +559,7 @@ cat > $PREFIX/etc/nginx/vhosts/https.conf.example << EOF
 server {
   listen 443;
   root $PREFIX/var/www/$APP_NAME/public;
-	passenger_enabled on;
+  passenger_enabled on;
 
   # vhost specific access log
   access_log $PREFIX/var/log/nginx/https_access.log main;
@@ -647,64 +658,18 @@ make install
 # Things should go without a hitch on WebFaction's machines.
 
 ###############################################################################
-# Create the monit rc script (from http://quaddro.net/rcscripts/rc.monit).
-
-cat > $PREFIX/etc/rc.d/monit << EOF
-#!/bin/sh
-# Start/stop/restart monit
-# Important: monit must be set to be a daemon in $PREFIX/etc/monitrc
-#
-# You will probably want to start this towards the end.
-#
-MONIT=$PREFIX/bin/monit
-
-monit_start() {
-  \$MONIT
-}
-monit_stop() {
-  \$MONIT quit
-}
-monit_restart() {
-  monit_stop
-  sleep 1
-  monit_start
-}
-monit_reload() {
-  \$MONIT reload
-}
-case "\$1" in
-'start')
-  monit_start
-  ;;
-'stop')
-  monit_stop
-  ;;
-'restart')
-  monit_restart
-  ;;
-'reload')
-  monit_reload
-  ;;
-*)
-  echo "usage \$0 start|stop|restart|reload"
-esac
-EOF
-
-chmod 755 $PREFIX/etc/rc.d/monit
-
-###############################################################################
-# Create the monitrc file. This comes from Ezra Zygmuntowicz. I've commented
-# out all but the essential lines. This works perfectly fine, but it could
-# use touch up.
+# Create the monitrc file. Edit and uncomment lines as necessary.
 
 cat > $PREFIX/etc/monitrc << EOF
-set daemon 30 
-#set logfile syslog facility log_daemon 
-#set mailserver smtp.example.com 
-#set mail-format {from:monit@example.com} 
-#set alert sysadmin@example.com only on { timeout, nonexist } 
-set httpd port $MONIT_PORT
-  allow localhost 
+set daemon 60 # 30, 60, or 120 second intervals are good
+set logfile $PREFIX/var/log/monit.log
+set httpd port $MONIT_PORT #and use address MY-IP-ADDRESS
+	allow localhost
+	#allow MY-IP-ADDRESS
+	#allow username:password # basic auth
+#set mailserver smtp.gmail.com port 587 username "MYUSERNAME@gmail.com" password "MYPASSWORD" using tlsv1 with timeout 30 seconds
+#set mail-format {from:monit@example.com}
+#set alert sysadmin@example.com #only on { timeout, nonexist } # Default email to send alerts to
 include $PREFIX/etc/monit/*.monitrc
 EOF
 
@@ -739,9 +704,9 @@ EOF
 
 cat > $PREFIX/etc/monit/$APP_NAME.monitrc.example << EOF
 check process ${APP_NAME}0
-  with pidfile $PREFIX/var/www/$APP_NAME/tmp/pids/thin.0.pid
-  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.pid -o 0"
-  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.0.pid"
+  with pidfile $PREFIX/var/run/thin.0.pid
+  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/run/thin.pid -o 0"
+  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/run/thin.0.pid"
   if totalmem > 90.0 MB for 5 cycles then restart
   if failed unixsocket $PREFIX/var/tmp/thin.0.sock then restart
   if cpu usage > 95% for 3 cycles then restart
@@ -749,9 +714,9 @@ check process ${APP_NAME}0
   group $APP_NAME
 
 check process ${APP_NAME}1
-  with pidfile $PREFIX/var/www/$APP_NAME/tmp/pids/thin.1.pid
-  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.pid -o 1"
-  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/www/$APP_NAME/tmp/pids/thin.1.pid"
+  with pidfile $PREFIX/var/run/thin.1.pid
+  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/run/thin.pid -o 1"
+  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/run/thin.1.pid"
   if totalmem > 90.0 MB for 5 cycles then restart
   if failed unixsocket $PREFIX/var/tmp/thin.1.sock then restart
   if cpu usage > 95% for 3 cycles then restart
@@ -760,16 +725,27 @@ check process ${APP_NAME}1
 EOF
 
 ###############################################################################
-# Create the boot script. The script removes pid files from web app locations.
-# Orphaned pid files will prevent applications like thin from starting. The
-# script will then start monit which in turn will start up nginx and any other
-# monitored application. Be careful running this script arbitrarily; you don't
-# want to delete the pid files of running processes!
+# Create the boot script. The script removes pid files from the canonical
+# location $PREFIX/var/run. Orphaned pid files will prevent applications such
+# as thin from starting. The script will then start monit which in turn will
+# start up all monitored applications. "monit start all" isn't strictly
+# necessary, but if you execute "monit stop all" or "monit stop APP_NAME", monit
+# remembers this and won't start them automatically on reboot just by calling
+# "monit". Such daemons need to be reactivated using "monit start all" or "monit
+# start APP_NAME".
+
+# Be careful running the boot script arbitrarily; you don't want to delete the
+# pid files of running processes! If you do, don't panic. Execute "killall -u $USER".
+# Your ssh session will be killed along with all of your applications. Login
+# again and execute "$PREFIX/etc/rc.d/boot" to "reboot" your stack.
 
 cat > $PREFIX/etc/rc.d/boot << EOF
+#!/bin/sh
+
 . \$HOME/.bash_profile
-find \$PREFIX/var/www/ -type f -name *.pid -print0 | xargs -0 rm
+find \$PREFIX/var/run/ -type f -name *.pid -print0 | xargs -0 rm
 monit
+monit start all
 EOF
 
 chmod 755 $PREFIX/etc/rc.d/boot
@@ -794,9 +770,10 @@ rm $PREFIX/var/tmp/oldcrontab $PREFIX/var/tmp/newcrontab
 # perfectly fine on WebFaction, however.
 
 ###############################################################################
-# Fire up the stack!
+# Start up
 
 monit
+monit start all
 
 # If you want to use thin instead of passenger:
 # 1. Move nginx vhost...
@@ -804,14 +781,12 @@ monit
 # mv $PREFIX/etc/nginx/vhosts/$APP_NAME-thin.conf.example $PREFIX/etc/nginx/vhosts/$APP_NAME.conf
 # 2. Move monitrc file...
 # mv $PREFIX/etc/monit/$APP_NAME.monitrc.example $PREFIX/etc/monit/$APP_NAME.monitrc
-# 3. Stop all and restart monit...
-# monit stop all
-# monit quit
-# monit
-# 4. Prevent passenger processes from starting up with nginx. You have to
-#    manually edit $PREFIX/etc/nginx/nginx.conf. Comment out the passenger
-#    directives: passenger_root (most importantly), passenger_ruby,
-#    passenger_max_pool_size, and any others.
-# 5. Also make sure that the upstream thin directive is uncommented in the
-#    nginx.conf file. I did not comment it out because it should not do any
-#    harm if not used.
+# 3. Reinitialize monit and restart all monitored applications...
+# monit reload
+# monit restart all
+# 4. To save memory, prevent passenger processes from starting up with nginx.
+#    You have to manually edit $PREFIX/etc/nginx/nginx.conf. Comment out the
+#    passenger directives: passenger_root (most importantly), passenger_ruby,
+#    passenger_max_pool_size, and any others. Then restart nginx.
+# 5. Also, make sure that the upstream thin directive is uncommented in the
+#    nginx.conf file. I did not comment it out because it doesn't do any harm.
