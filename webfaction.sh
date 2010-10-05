@@ -11,6 +11,14 @@ export APP_PORT=4000
 export MONIT_PORT=4002
 export RUBYENTED=true
 
+# My server is a Xeon 3060 (32-bit mode). Safe CFLAGS:
+#CHOST="i686-pc-linux-gnu"
+#CFLAGS="-march=prescott -O2 -pipe -fomit-frame-pointer"
+#CXXFLAGS="${CFLAGS}"
+
+# No need to use -pipe; doesn't affect code, reduces compile time at the
+# expense of greating memory usage during compile.
+
 ###############################################################################
 # Back up $HOME/.bash_profile and write a clean file. The string limiter
 # definition can be quoted with single or double quotes at the beginning to

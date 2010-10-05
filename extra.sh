@@ -155,8 +155,8 @@ check process memcached
 	group memcached
 EOF
 
-# Stoping monit through this script is the only way to both stop it and remove
-# the pid file.
+# This script is the only way to stop memcached it and remove the pid file.
+# I had problems with this in the monitrc file.
 cat > $PREFIX/etc/rc.d/memcached-stop << EOF
 #!/bin/sh
 
@@ -171,13 +171,24 @@ cat > $PREFIX/etc/monit/php-cgi.monitrc << EOF
 check process php-cgi
   with pidfile $PREFIX/var/run/fastcgi-php.pid
   start program "$PREFIX/bin/spawn-fcgi -s $PREFIX/var/tmp/fastcgi.sock -P $PREFIX/var/run/fastcgi-php.pid -d $PREFIX/etc -- $PREFIX/bin/php-cgi"
-  stop program "/bin/kill `/bin/cat $PREFIX/var/run/fastcgi-php.pid`"
+  stop program "$PREFIX/etc/rc.d/php-cgi-stop"
   if totalmem > 50.0 MB for 5 cycles then restart
   if failed unixsocket $PREFIX/var/tmp/fastcgi.sock then restart
   if cpu usage > 95% for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
   group php-cgi
 EOF
+
+# This script is the only way to stop php-cgi and remove the pid file.
+# I had problems with this in the monitrc file.
+cat > $PREFIX/etc/rc.d/php-cgi-stop << EOF
+#!/bin/sh
+
+/bin/kill `/bin/cat $PREFIX/var/run/fastcgi-php.pid`
+/bin/rm $PREFIX/var/run/fastcgi-php.pid
+EOF
+
+chmod 755 $PREFIX/etc/rc.d/php-cgi-stop
 
 # Monit file for couchdb (Replace port with your couchdb port)
 cat > $PREFIX/etc/monit/couchdb.monitrc << EOF
