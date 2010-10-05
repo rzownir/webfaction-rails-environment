@@ -17,7 +17,10 @@ export RUBYENTED=true
 #CXXFLAGS="${CFLAGS}"
 
 # No need to use -pipe; doesn't affect code, reduces compile time at the
-# expense of greating memory usage during compile.
+# expense of greater memory usage during compile.
+
+# To find out what processor your server has, so you can set -march correctly,
+# cat /proc/cpuinfo
 
 ###############################################################################
 # Back up $HOME/.bash_profile and write a clean file. The string limiter
