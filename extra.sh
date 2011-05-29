@@ -8,9 +8,9 @@
 # Memcached
 
 cd $PREFIX/src
-wget http://monkey.org/~provos/libevent-1.4.13-stable.tar.gz
-tar xzvf libevent-1.4.13-stable.tar.gz
-cd libevent-1.4.13-stable
+wget http://monkey.org/~provos/libevent-2.0.11-stable.tar.gz
+tar xzvf libevent-2.0.11-stable.tar.gz
+cd libevent-2.0.11-stable
 ./configure --prefix=$PREFIX
 make
 make install
@@ -24,9 +24,9 @@ make
 make install
 
 cd $PREFIX/src
-wget http://launchpad.net/libmemcached/1.0/0.43/+download/libmemcached-0.43.tar.gz
-tar xzvf libmemcached-0.43.tar.gz
-cd libmemcached-0.43
+wget http://launchpad.net/libmemcached/1.0/0.49/+download/libmemcached-0.49.tar.gz
+tar xzvf libmemcached-0.49.tar.gz
+cd libmemcached-0.49
 export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit)
 ./configure --prefix=$PREFIX
 make
@@ -47,9 +47,9 @@ ldconfig $PREFIX/lib
 # PHP
 
 cd $PREFIX/src
-wget http://us.php.net/get/php-5.3.3.tar.gz/from/this/mirror
-tar xzvf php-5.3.3.tar.gz
-cd php-5.3.3
+wget http://us.php.net/get/php-5.3.6.tar.gz/from/this/mirror
+tar xzvf php-5.3.6.tar.gz
+cd php-5.3.6
 ./configure --prefix=$PREFIX --with-mysql --with-zlib --with-gettext --with-gdbm
 make
 make install
@@ -72,12 +72,12 @@ make
 make install
 
 ###############################################################################
-# Erlang R14B
+# Erlang R14B03
 
 cd $PREFIX/src
-wget http://www.erlang.org/download/otp_src_R14B.tar.gz
-tar xzvf otp_src_R14B.tar.gz
-cd otp_src_R14B
+wget http://www.erlang.org/download/otp_src_R14B03.tar.gz
+tar xzvf otp_src_R14B03.tar.gz
+cd otp_src_R14B03
 ./configure --prefix=$PREFIX #--enable-darwin-64bit # Mac OS X >=10.6
 make
 make install
@@ -86,16 +86,16 @@ make install
 # CouchDB (requires Erlang)
 
 cd $PREFIX/src
-wget http://curl.haxx.se/download/curl-7.21.1.tar.gz
-tar xzvf curl-7.21.1.tar.gz
-cd curl-7.21.1
+wget http://curl.haxx.se/download/curl-7.21.6.tar.gz
+tar xzvf curl-7.21.6.tar.gz
+cd curl-7.21.6
 ./configure --prefix=$PREFIX
 make
 make install
 
 cd $PREFIX/src
-wget http://download.icu-project.org/files/icu4c/4.4.1/icu4c-4_4_1-src.tgz
-tar xzvf icu4c-4_4_1-src.tgz
+wget http://download.icu-project.org/files/icu4c/4.8/icu4c-4_8-src.tgz
+tar xzvf icu4c-4_8-src.tgz
 cd icu/source
 ./configure --prefix=$PREFIX
 #./runConfigureICU MacOSX --prefix=$PREFIX --with-library-bits=64 --disable-samples --enable-static # Mac OS X >=10.6
@@ -104,18 +104,15 @@ make install
 
 # Mozilla SpiderMonkey
 # The latest source is in http://hg.mozilla.org/mozilla-central/archive/tip.tar.gz.
-# But we'll stick to the version last released independently and not buried inside
-# a much larger project!
+# But we'll use the latest standalone version.
 
 cd $PREFIX/src
-wget http://ftp.mozilla.org/pub/mozilla.org/js/js-1.8.0-rc1.tar.gz
-tar xzvf js-1.8.0-rc1.tar.gz
-cd js/src
-# On Mac OS X 10.6...
-#curl -O http://svn.macports.org/repository/macports/trunk/dports/lang/spidermonkey/files/patch-jsprf.c
-#patch -p0 -i patch-jsprf.c
-make -f Makefile.ref
-JS_DIST=$PREFIX make -f Makefile.ref export
+wget http://ftp.mozilla.org/pub/mozilla.org/js/js185-1.0.0.tar.gz
+tar xzvf js185-1.0.0.tar.gz
+cd js-1.8.5/js/src
+./configure --prefix=$PREFIX
+make
+make install
 
 # Make sure couchdb is linked to the libraries it depends on.
 # I used to have "export LD_LIBRARY_PATH=$PREFIX/lib", but this is hackish.
@@ -131,9 +128,9 @@ JS_DIST=$PREFIX make -f Makefile.ref export
 export LD_RUN_PATH=$PREFIX/lib # Works on WebFaction!
 
 cd $PREFIX/src
-wget http://apache.ziply.com/couchdb/1.0.1/apache-couchdb-1.0.1.tar.gz
-tar xzvf apache-couchdb-1.0.1.tar.gz
-cd apache-couchdb-1.0.1
+wget http://mirror.cc.columbia.edu/pub/software/apache/couchdb/1.0.2/apache-couchdb-1.0.2.tar.gz
+tar xzvf apache-couchdb-1.0.2.tar.gz
+cd apache-couchdb-1.0.2
 ./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 make
 make install

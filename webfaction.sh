@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WebFaction Application Stack Build Script
-# (c) 2008-2010 - Ronald M. Zownir
+# (c) 2008-2011 - Ronald M. Zownir
 
 ###############################################################################
 # Edit these variables as instructed in the README.
@@ -86,32 +86,32 @@ chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
 ###############################################################################
-# Git 1.7.2.3
+# Git 1.7.5.3
 # Git is a great source code management system. Git will be used to retrieve
 # the third party nginx-upstream-fair module for nginx.
 
 cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.7.2.3.tar.gz
-tar xzvf git-1.7.2.3.tar.gz
-cd git-1.7.2.3
+wget http://kernel.org/pub/software/scm/git/git-1.7.5.3.tar.gz
+tar xzvf git-1.7.5.3.tar.gz
+cd git-1.7.5.3
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.7.2.3.tar.gz
-tar xzvf git-manpages-1.7.2.3.tar.gz
-rm git-manpages-1.7.2.3.tar.gz
+wget http://kernel.org/pub/software/scm/git/git-manpages-1.7.5.3.tar.gz
+tar xzvf git-manpages-1.7.5.3.tar.gz
+rm git-manpages-1.7.5.3.tar.gz
 
 ###############################################################################
-# SQLite3 3.7.2
+# SQLite3 3.7.6.3
 # The latest sqlite3-ruby gem requires a version of SQLite3 that may be newer
 # than what is on your system. Here's how to install your own up-to-date copy.
 
 cd $PREFIX/src
-wget http://www.sqlite.org/sqlite-amalgamation-3.7.2.tar.gz
-tar xzvf sqlite-amalgamation-3.7.2.tar.gz
-cd sqlite-3.7.2
+wget http://www.sqlite.org/sqlite-autoconf-3070603.tar.gz
+tar xzvf sqlite-autoconf-3070603.tar.gz
+cd sqlite-autoconf-3070603
 ./configure --prefix=$PREFIX
 make
 make install
@@ -122,13 +122,13 @@ make install
 if [ $RUBYENTED == true ]
 then #-------------------------------------------------------------------------
 
-# Ruby Enterprise Edition 1.8.7 - 2010.02
+# Ruby Enterprise Edition 1.8.7 - 2011.03
 # Reduces memory consumption of rails apps by up to 33% when used with Passenger.
 
 cd $PREFIX/src
-wget http://rubyforge.org/frs/download.php/71096/ruby-enterprise-1.8.7-2010.02.tar.gz
-tar xzvf ruby-enterprise-1.8.7-2010.02.tar.gz
-cd ruby-enterprise-1.8.7-2010.02
+wget http://rubyenterpriseedition.googlecode.com/files/ruby-enterprise-1.8.7-2011.03.tar.gz
+tar xzvf ruby-enterprise-1.8.7-2011.03.tar.gz
+cd ruby-enterprise-1.8.7-2011.03
 ./installer -a $PREFIX
 
 # Ensure RubyGems is up to date
@@ -162,11 +162,11 @@ make
 make install
 #make install-doc # Documentation generation is memory intensive!
 
-# RubyGems 1.3.7
+# RubyGems 1.7.2
 cd $PREFIX/src
-wget http://production.cf.rubygems.org/rubygems/rubygems-1.3.7.tgz
-tar xzvf rubygems-1.3.7.tgz
-cd rubygems-1.3.7
+wget http://production.cf.rubygems.org/rubygems/rubygems-1.7.2.tgz
+tar xzvf rubygems-1.7.2.tgz
+cd rubygems-1.7.2
 $PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
 
 # Ensure RubyGems is up to date
@@ -180,7 +180,7 @@ gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 fi #---------------------------------------------------------------------------
 
 ###############################################################################
-# Nginx 0.8.52
+# Nginx 1.0.3
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -203,21 +203,26 @@ fi #---------------------------------------------------------------------------
 
 export PASSENGER_ROOT=`passenger-config --root`
 
+# Note:
+# If upgrading Passenger, and you installed curl along with CouchDB, run:
+# export LD_RUN_PATH=$PREFIX/lib
+# right here to prevent PassengerWatchdog from failing to start with nginx.
+
 cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-1.0.0a.tar.gz
-tar xzvf openssl-1.0.0a.tar.gz
-wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.10.tar.gz
-tar xzvf pcre-8.10.tar.gz
+wget http://www.openssl.org/source/openssl-1.0.0d.tar.gz
+tar xzvf openssl-1.0.0d.tar.gz
+wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.12.tar.gz
+tar xzvf pcre-8.12.tar.gz
 wget http://zlib.net/zlib-1.2.5.tar.gz
 tar xzvf zlib-1.2.5.tar.gz
-wget http://nginx.org/download/nginx-0.8.52.tar.gz
-tar xzvf nginx-0.8.52.tar.gz
+wget http://nginx.org/download/nginx-1.0.3.tar.gz
+tar xzvf nginx-1.0.3.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-0.8.52
+cd nginx-1.0.3
 ./configure \
---with-pcre=$PREFIX/src/pcre-8.10 \
+--with-pcre=$PREFIX/src/pcre-8.12 \
 --with-zlib=$PREFIX/src/zlib-1.2.5 \
---with-openssl=$PREFIX/src/openssl-1.0.0a \
+--with-openssl=$PREFIX/src/openssl-1.0.0d \
 --with-http_realip_module \
 --with-http_gzip_static_module \
 --with-http_ssl_module \
@@ -588,14 +593,14 @@ server {
 EOF
 
 ###############################################################################
-# Monit 5.1.1
+# Monit 5.2.5
 # Monit is a watchdog that manages processes. It makes sure that processes are
 # running and that they behave.
 
 cd $PREFIX/src
-wget http://mmonit.com/monit/dist/monit-5.1.1.tar.gz
-tar xzvf monit-5.1.1.tar.gz
-cd monit-5.1.1
+wget http://mmonit.com/monit/dist/monit-5.2.5.tar.gz
+tar xzvf monit-5.2.5.tar.gz
+cd monit-5.2.5
 ./configure --prefix=$PREFIX
 make
 make install
