@@ -100,10 +100,10 @@ wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.12.tar.gz
 tar xzvf pcre-8.12.tar.gz
 wget http://zlib.net/zlib-1.2.5.tar.gz
 tar xzvf zlib-1.2.5.tar.gz
-wget http://nginx.org/download/nginx-1.0.3.tar.gz
-tar xzvf nginx-1.0.3.tar.gz
+wget http://nginx.org/download/nginx-1.0.4.tar.gz
+tar xzvf nginx-1.0.4.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-1.0.3
+cd nginx-1.0.4
 ./configure \
 --with-pcre=$ENCAP_TARGET/src/pcre-8.12 \
 --with-zlib=$ENCAP_TARGET/src/zlib-1.2.5 \
@@ -113,7 +113,7 @@ cd nginx-1.0.3
 --with-http_realip_module \
 --add-module=$ENCAP_TARGET/src/nginx-upstream-fair \
 --add-module=$PASSENGER_ROOT/ext/nginx \
---prefix=$ENCAP_TARGET/encap/nginx-1.0.3 \
+--prefix=$ENCAP_TARGET/encap/nginx-1.0.4 \
 --conf-path=$ENCAP_TARGET/etc/nginx/nginx.conf \
 --error-log-path=$ENCAP_TARGET/var/log/nginx/error.log \
 --http-log-path=$ENCAP_TARGET/var/log/nginx/access.log \
@@ -127,9 +127,9 @@ cd nginx-1.0.3
 make
 make install
 
-rm -rf $ENCAP_TARGET/encap/nginx-1.0.3/html
-mkdir $ENCAP_TARGET/encap/nginx-1.0.3/etc
-mv $ENCAP_TARGET/etc/nginx $ENCAP_TARGET/encap/nginx-1.0.3/etc
+rm -rf $ENCAP_TARGET/encap/nginx-1.0.4/html
+mkdir $ENCAP_TARGET/encap/nginx-1.0.4/etc
+mv $ENCAP_TARGET/etc/nginx $ENCAP_TARGET/encap/nginx-1.0.4/etc
 
 # CONF FILES NOT INCLUDED IN PKG AS THEY ARE INSTALLED IN TARGET
 # MOVE CONF FILES TO SRC (BECAUSE WANT TARGET AS DEFAULT) THEN MAKE IT SO
@@ -145,7 +145,7 @@ mv $ENCAP_TARGET/etc/nginx $ENCAP_TARGET/encap/nginx-1.0.3/etc
 
 epkg nginx
 cd $ENCAP_TARGET/src/encap_pkgs
-mkencap nginx-1.0.3
+mkencap nginx-1.0.4
 
 ###############################################################################
 # Monit
@@ -325,13 +325,13 @@ mkencap js-1.8.5
 export LD_RUN_PATH=$ENCAP_TARGET/lib # This is going to be a little tricky with encap
 
 cd $ENCAP_TARGET/src
-wget http://mirror.cc.columbia.edu/pub/software/apache/couchdb/1.0.2/apache-couchdb-1.0.2.tar.gz
-tar xzvf apache-couchdb-1.0.2.tar.gz
-cd apache-couchdb-1.0.2
-./configure --prefix=$ENCAP_TARGET/encap/couchdb-1.0.2 --with-erlang=$ENCAP_TARGET/lib/erlang/usr/include --with-js-lib=$ENCAP_TARGET/lib --with-js-include=$ENCAP_TARGET/include
+wget http://mirror.cc.columbia.edu/pub/software/apache//couchdb/1.1.0/apache-couchdb-1.1.0.tar.gz
+tar xzvf apache-couchdb-1.1.0.tar.gz
+cd apache-couchdb-1.1.0
+./configure --prefix=$ENCAP_TARGET/encap/couchdb-1.1.0 --with-erlang=$ENCAP_TARGET/lib/erlang/usr/include --with-js-lib=$ENCAP_TARGET/lib --with-js-include=$ENCAP_TARGET/include
 make
 make install
 
 epkg couchdb
 cd $ENCAP_TARGET/src/encap_pkgs
-mkencap couchdb-1.0.2
+mkencap couchdb-1.1.0

@@ -11,7 +11,7 @@ users in mind, but is fairly generic. The directories `$HOME/logs/user` and
   from the 1.8.7 subversion branch)
 * Latest RubyGems
 * Gems: rack, rails, thin, passenger, capistrano, termios, sqlite3-ruby, mysql
-* nginx 1.0.3 (with nginx-upstream-fair module for fair load balancing and
+* nginx 1.0.4 (with nginx-upstream-fair module for fair load balancing and
   passenger module)
 * Monit 5.2.5
 * Startup scripts and working default configuration files for monit and nginx

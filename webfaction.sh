@@ -139,7 +139,7 @@ $PREFIX/bin/gem update --system
 
 # Install some more gems...
 gem install thin capistrano termios --no-rdoc --no-ri
-gem install sqlite3-ruby -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
+gem install sqlite3 -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
 
 # Ensure gems installed with REE are current
 gem update --no-rdoc --no-ri
@@ -174,13 +174,13 @@ $PREFIX/bin/gem update --system
 
 # Install some gems...
 gem install rack rails thin passenger capistrano termios --no-rdoc --no-ri
-gem install sqlite3-ruby -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
+gem install sqlite3 -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
 gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 
 fi #---------------------------------------------------------------------------
 
 ###############################################################################
-# Nginx 1.0.3
+# Nginx 1.0.4
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -215,10 +215,10 @@ wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.12.tar.gz
 tar xzvf pcre-8.12.tar.gz
 wget http://zlib.net/zlib-1.2.5.tar.gz
 tar xzvf zlib-1.2.5.tar.gz
-wget http://nginx.org/download/nginx-1.0.3.tar.gz
-tar xzvf nginx-1.0.3.tar.gz
+wget http://nginx.org/download/nginx-1.0.4.tar.gz
+tar xzvf nginx-1.0.4.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-1.0.3
+cd nginx-1.0.4
 ./configure \
 --with-pcre=$PREFIX/src/pcre-8.12 \
 --with-zlib=$PREFIX/src/zlib-1.2.5 \

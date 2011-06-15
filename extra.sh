@@ -36,7 +36,6 @@ make install
 gem install memcache-client --no-rdoc --no-ri
 
 # Fast client with lots of C, but does not have drop-in support for rails
-# Also dependent of specific libmemcached version
 gem install memcached --no-rdoc --no-ri
 
 # May need to execute the following on some systems like ArchLinux. It's not
@@ -128,9 +127,9 @@ make install
 export LD_RUN_PATH=$PREFIX/lib # Works on WebFaction!
 
 cd $PREFIX/src
-wget http://mirror.cc.columbia.edu/pub/software/apache/couchdb/1.0.2/apache-couchdb-1.0.2.tar.gz
-tar xzvf apache-couchdb-1.0.2.tar.gz
-cd apache-couchdb-1.0.2
+wget http://mirror.cc.columbia.edu/pub/software/apache//couchdb/1.1.0/apache-couchdb-1.1.0.tar.gz
+tar xzvf apache-couchdb-1.1.0.tar.gz
+cd apache-couchdb-1.1.0
 ./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 make
 make install
