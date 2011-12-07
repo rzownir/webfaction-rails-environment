@@ -9,7 +9,7 @@ export PREFIX=$HOME/apps
 export APP_NAME=myrailsapp
 export APP_PORT=4000
 export MONIT_PORT=4002
-export RUBYENTED=true
+export RUBYSVN=false
 
 # My server is a Xeon 3060 (32-bit mode). Safe CFLAGS:
 #CHOST="i686-pc-linux-gnu"
@@ -86,101 +86,77 @@ chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
 ###############################################################################
-# Git 1.7.5.3
+# Function to download and unarchive .tar.gz files
+
+function getunpack {
+	cd $PREFIX/src
+	wget $1
+	tar xzvf `basename $1`
+}
+
+# Build and install from source directory with configure arguments
+function buildinstall {
+	cd $PREFIX/src/$1
+	shift # Shift $1 out of parameters array
+	./configure --prefix=$PREFIX $@ # $@ contains all (existing) parameters
+	make
+	make install
+}
+
+###############################################################################
+# Git 1.7.8
 # Git is a great source code management system. Git will be used to retrieve
 # the third party nginx-upstream-fair module for nginx.
 
-cd $PREFIX/src
-wget http://kernel.org/pub/software/scm/git/git-1.7.5.3.tar.gz
-tar xzvf git-1.7.5.3.tar.gz
-cd git-1.7.5.3
+getunpack http://git-core.googlecode.com/files/git-1.7.8.tar.gz
+cd git-1.7.8
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://kernel.org/pub/software/scm/git/git-manpages-1.7.5.3.tar.gz
-tar xzvf git-manpages-1.7.5.3.tar.gz
-rm git-manpages-1.7.5.3.tar.gz
+wget http://git-core.googlecode.com/files/git-manpages-1.7.8.tar.gz
+tar xzvf git-manpages-1.7.8.tar.gz
+rm git-manpages-1.7.8.tar.gz
 
 ###############################################################################
-# SQLite3 3.7.6.3
+# SQLite3 3.7.9
 # The latest sqlite3-ruby gem requires a version of SQLite3 that may be newer
 # than what is on your system. Here's how to install your own up-to-date copy.
 
-cd $PREFIX/src
-wget http://www.sqlite.org/sqlite-autoconf-3070603.tar.gz
-tar xzvf sqlite-autoconf-3070603.tar.gz
-cd sqlite-autoconf-3070603
-./configure --prefix=$PREFIX
-make
-make install
+getunpack http://www.sqlite.org/sqlite-autoconf-3070900.tar.gz
+buildinstall sqlite-autoconf-3070900
 
 ###############################################################################
-# Install either Ruby Enterprise Edition or Ruby 1.8.7 subversion
+# Install either Ruby 1.9.3-p0 or latest from 1.9.3 subversion branch
 
-if [ $RUBYENTED == true ]
+if [ $RUBYSVN == true ]
 then #-------------------------------------------------------------------------
-
-# Ruby Enterprise Edition 1.8.7 - 2011.03
-# Reduces memory consumption of rails apps by up to 33% when used with Passenger.
-
-cd $PREFIX/src
-wget http://rubyenterpriseedition.googlecode.com/files/ruby-enterprise-1.8.7-2011.03.tar.gz
-tar xzvf ruby-enterprise-1.8.7-2011.03.tar.gz
-cd ruby-enterprise-1.8.7-2011.03
-./installer -a $PREFIX
-
-# Ensure RubyGems is up to date
-$PREFIX/bin/gem update --system
-
-# Gems installed with REE include: fastthread, mysql, passenger, rack, rails,
-# rake, rubygems-update, sqlite3-ruby.
-
-# Install some more gems...
-gem install thin capistrano termios --no-rdoc --no-ri
-gem install sqlite3 -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
-
-# Ensure gems installed with REE are current
-gem update --no-rdoc --no-ri
-
-# Might want to clean out old gems
-#gem clean
-
+	cd $PREFIX/src
+	svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_9_3/
+	cd ruby_1_9_3
+	autoconf
+	./configure --prefix=$PREFIX
+	make
+	make install
+	#make install-doc # Documentation generation is memory intensive!
 else #-------------------------------------------------------------------------
+	getunpack http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz
+	buildinstall ruby-1.9.3-p0
+fi #---------------------------------------------------------------------------
 
-# Ruby 1.8.7 (latest from the 1.8.7 subversion branch)
-# The latest version with security holes patched. Add custom configure options
-# as you see fit before running this script.
-
-cd $PREFIX/src
-svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_8_7/
-cd ruby_1_8_7
-autoconf
-./configure --prefix=$PREFIX
-make
-make install
-#make install-doc # Documentation generation is memory intensive!
-
-# RubyGems 1.7.2
-cd $PREFIX/src
-wget http://production.cf.rubygems.org/rubygems/rubygems-1.7.2.tgz
-tar xzvf rubygems-1.7.2.tgz
-cd rubygems-1.7.2
-$PREFIX/bin/ruby setup.rb --no-rdoc --no-ri
-
-# Ensure RubyGems is up to date
-$PREFIX/bin/gem update --system
+# RubyGems installs with Ruby 1.9.3
+$PREFIX/bin/gem update --system # Ensure RubyGems is up to date
+$PREFIX/bin/gem update # Ensure preinstalled gems are up to date
 
 # Install some gems...
-gem install rack rails thin passenger capistrano termios --no-rdoc --no-ri
+gem install rack rails thin unicorn passenger capistrano --no-rdoc --no-ri
 gem install sqlite3 -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
 gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 
-fi #---------------------------------------------------------------------------
 
 ###############################################################################
-# Nginx 1.0.4
+# Nginx 1.0.10
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -208,28 +184,21 @@ export PASSENGER_ROOT=`passenger-config --root`
 # export LD_RUN_PATH=$PREFIX/lib
 # right here to prevent PassengerWatchdog from failing to start with nginx.
 
-cd $PREFIX/src
-wget http://www.openssl.org/source/openssl-1.0.0d.tar.gz
-tar xzvf openssl-1.0.0d.tar.gz
-wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.12.tar.gz
-tar xzvf pcre-8.12.tar.gz
-wget http://zlib.net/zlib-1.2.5.tar.gz
-tar xzvf zlib-1.2.5.tar.gz
-wget http://nginx.org/download/nginx-1.0.4.tar.gz
-tar xzvf nginx-1.0.4.tar.gz
+getunpack http://www.openssl.org/source/openssl-1.0.0e.tar.gz
+getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.20.tar.gz
+getunpack http://zlib.net/zlib-1.2.5.tar.gz
+getunpack http://nginx.org/download/nginx-1.0.10.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-cd nginx-1.0.4
-./configure \
---with-pcre=$PREFIX/src/pcre-8.12 \
+buildinstall nginx-1.0.10 \
+--with-pcre=$PREFIX/src/pcre-8.20 \
 --with-zlib=$PREFIX/src/zlib-1.2.5 \
---with-openssl=$PREFIX/src/openssl-1.0.0d \
+--with-openssl=$PREFIX/src/openssl-1.0.0e \
 --with-http_realip_module \
 --with-http_gzip_static_module \
 --with-http_ssl_module \
 --with-http_flv_module \
 --add-module=$PREFIX/src/nginx-upstream-fair \
 --add-module=$PASSENGER_ROOT/ext/nginx \
---prefix=$PREFIX \
 --conf-path=$PREFIX/etc/nginx/nginx.conf \
 --error-log-path=$PREFIX/var/log/nginx/error.log \
 --http-log-path=$PREFIX/var/log/nginx/access.log \
@@ -240,8 +209,6 @@ cd nginx-1.0.4
 --http-fastcgi-temp-path=$PREFIX/var/spool/nginx/fastcgi_temp \
 --http-uwsgi-temp-path=$PREFIX/var/spool/nginx/uwsgi_temp \
 --http-scgi-temp-path=$PREFIX/var/spool/nginx/scgi_temp
-make
-make install
 
 ###############################################################################
 # Remove the html directory created by nginx. It's out of place and was only
@@ -406,6 +373,7 @@ http {
   passenger_ruby $PREFIX/bin/ruby;
   passenger_max_pool_size 4; # max total instances (default is 6)
   passenger_max_instances_per_app 2;
+  passenger_friendly_error_pages off; # don't expose traces to site visitors
 
   set_real_ip_from 192.168.1.0/24; # [public] server IP (change this to your IP)
   set_real_ip_from 127.0.0.1;
@@ -593,17 +561,12 @@ server {
 EOF
 
 ###############################################################################
-# Monit 5.2.5
+# Monit 5.3.1
 # Monit is a watchdog that manages processes. It makes sure that processes are
 # running and that they behave.
 
-cd $PREFIX/src
-wget http://mmonit.com/monit/dist/monit-5.2.5.tar.gz
-tar xzvf monit-5.2.5.tar.gz
-cd monit-5.2.5
-./configure --prefix=$PREFIX
-make
-make install
+getunpack http://mmonit.com/monit/dist/monit-5.3.1.tar.gz
+buildinstall monit-5.3.1
 
 # Note to self:
 # If configure fails, try:

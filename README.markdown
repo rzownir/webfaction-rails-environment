@@ -5,21 +5,19 @@ users in mind, but is fairly generic. The directories `$HOME/logs/user` and
 `$HOME/webapps/$APP_NAME` are assumed to exist.
 
 ## What's Provided
-* Git 1.7.5.3
-* SQLite3 3.7.6.3
-* Your choice of Ruby Enterprise Edition 1.8.7 - 2011.03 or Ruby 1.8.7 (latest
-  from the 1.8.7 subversion branch)
+* Git 1.7.8
+* SQLite3 3.7.9
+* Your choice of Ruby 1.9.3-p0 or latest Ruby from the 1.9.3 subversion branch
 * Latest RubyGems
-* Gems: rack, rails, thin, passenger, capistrano, termios, sqlite3-ruby, mysql
-* nginx 1.0.4 (with nginx-upstream-fair module for fair load balancing and
+* Gems: rack, rails, thin, unicorn, passenger, capistrano, sqlite3-ruby, mysql
+* nginx 1.0.10 (with nginx-upstream-fair module for fair load balancing and
   passenger module)
-* Monit 5.2.5
+* Monit 5.3.1
 * Startup scripts and working default configuration files for monit and nginx
 
-## Recent Changes
-I have combined the two previous scripts, 'classic' and 'new'. You still have
-the choice of running things with passenger or a thin cluster. Passenger is the
-default. You will have to follow a few extra steps to run thin. See below.
+## Options
+You have the choice of running with passenger or a thin cluster. Passenger is
+the default. You will have to follow a few extra steps to run thin. See below.
 
 ## Before Running the Script
 1. Create a rails app from the WebFaction control panel. Leave the autostart
@@ -42,19 +40,19 @@ default. You will have to follow a few extra steps to run thin. See below.
        one. The default value is `4000`.
      * `MONIT_PORT` is the port WebFaction assigned to the app created in step
        two. The default value is `4002`.
-4. If you want to install Ruby 1.8.7 from the official subversion repository,
-   edit line 12 of the script to read `export RUBYENTED=false`
+4. If you want to install Ruby 1.9.3 from the official subversion repository,
+   edit line 12 of the script to read `export RUBYSVN=true`
 
 ## After Running the Script
 If no errors occurred, your rails app will be up and running in the production
 environment. Of course, `$HOME/webapps/$APP_NAME` must contain a valid app for
 this to happen, even if it's just a skeleton.
 
-By default passenger serves up the app. This can be easily changed so that two
-thin instances are set up listening on unix sockets (mongrel does not have this
-capability) with nginx as the fair load balancing reverse proxy. Monit watches
-nginx (and the thin servers, if set up). A crontab entry ensures that your setup
-springs back to life when the server is rebooted.
+By default, passenger serves the app. This can be easily changed so that two
+thin instances are set up listening on unix sockets with nginx as the fair load
+balancing reverse proxy. Monit watches nginx (and the thin servers, if set up).
+A crontab entry ensures that your setup springs back to life when the server is
+rebooted.
 
 There are a couple of optional things you should do:
 
@@ -112,6 +110,3 @@ The script `extra.sh` contains some additional goodies:
 
 ## Experimental
 The script `encap.sh` is experimental. The goal is to encapsulate applications, making package management easier. I don't recommend it at this point.
-
-## Feedback
-Please leave a blog comment!

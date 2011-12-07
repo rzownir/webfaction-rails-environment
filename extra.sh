@@ -5,32 +5,35 @@
 . $HOME/.bash_profile
 
 ###############################################################################
+# Function to download and unarchive .tar.gz files
+
+function getunpack {
+	cd $PREFIX/src
+	wget $1
+	tar xzvf `basename $1`
+}
+
+# Build and install from source directory with configure arguments
+function buildinstall {
+	cd $PREFIX/src/$1
+	shift # Shift $1 out of parameters array
+	./configure --prefix=$PREFIX $@ # $@ contains all (existing) parameters
+	make
+	make install
+}
+
+###############################################################################
 # Memcached
 
-cd $PREFIX/src
-wget http://monkey.org/~provos/libevent-2.0.11-stable.tar.gz
-tar xzvf libevent-2.0.11-stable.tar.gz
-cd libevent-2.0.11-stable
-./configure --prefix=$PREFIX
-make
-make install
+getunpack https://github.com/downloads/libevent/libevent/libevent-2.0.16-stable.tar.gz
+buildinstall libevent-2.0.16-stable
 
-cd $PREFIX/src
-wget http://memcached.googlecode.com/files/memcached-1.4.5.tar.gz
-tar xzvf memcached-1.4.5.tar.gz
-cd memcached-1.4.5
-./configure --prefix=$PREFIX
-make
-make install
+getunpack http://memcached.googlecode.com/files/memcached-1.4.10.tar.gz
+buildinstall memcached-1.4.10
 
-cd $PREFIX/src
-wget http://launchpad.net/libmemcached/1.0/0.49/+download/libmemcached-0.49.tar.gz
-tar xzvf libmemcached-0.49.tar.gz
-cd libmemcached-0.49
-export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit)
-./configure --prefix=$PREFIX
-make
-make install
+getunpack http://launchpad.net/libmemcached/1.0/1.0.2/+download/libmemcached-1.0.2.tar.gz
+export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit) [Old, don't know if true anymore]
+buildinstall libmemcached-1.0.2
 
 # All ruby memcached client
 gem install memcache-client --no-rdoc --no-ri
@@ -45,13 +48,8 @@ ldconfig $PREFIX/lib
 ###############################################################################
 # PHP
 
-cd $PREFIX/src
-wget http://us.php.net/get/php-5.3.6.tar.gz/from/this/mirror
-tar xzvf php-5.3.6.tar.gz
-cd php-5.3.6
-./configure --prefix=$PREFIX --with-mysql --with-zlib --with-gettext --with-gdbm
-make
-make install
+getunpack http://www.php.net/distributions/php-5.3.8.tar.gz
+buildinstall php-5.3.8 --with-mysql --with-zlib --with-gettext --with-gdbm
 
 # To avoid time zone warnings
 cat > $PREFIX/etc/php.ini << EOF
@@ -62,56 +60,31 @@ EOF
 ###############################################################################
 # spawn-fcgi
 
-cd $PREFIX/src
-wget http://www.lighttpd.net/download/spawn-fcgi-1.6.3.tar.gz
-tar xzvf spawn-fcgi-1.6.3.tar.gz
-cd spawn-fcgi-1.6.3
-./configure --prefix=$PREFIX
-make
-make install
+getunpack http://www.lighttpd.net/download/spawn-fcgi-1.6.3.tar.gz
+buildinstall spawn-fcgi-1.6.3
 
 ###############################################################################
-# Erlang R14B03
+# Erlang R14B04
 
-cd $PREFIX/src
-wget http://www.erlang.org/download/otp_src_R14B03.tar.gz
-tar xzvf otp_src_R14B03.tar.gz
-cd otp_src_R14B03
-./configure --prefix=$PREFIX #--enable-darwin-64bit # Mac OS X >=10.6
-make
-make install
+getunpack http://www.erlang.org/download/otp_src_R14B04.tar.gz
+buildinstall otp_src_R14B04 #--enable-darwin-64bit # Mac OS X >=10.6
 
 ###############################################################################
 # CouchDB (requires Erlang)
 
-cd $PREFIX/src
-wget http://curl.haxx.se/download/curl-7.21.6.tar.gz
-tar xzvf curl-7.21.6.tar.gz
-cd curl-7.21.6
-./configure --prefix=$PREFIX
-make
-make install
+getunpack http://curl.haxx.se/download/curl-7.23.1.tar.gz
+buildinstall curl-7.23.1
 
-cd $PREFIX/src
-wget http://download.icu-project.org/files/icu4c/4.8/icu4c-4_8-src.tgz
-tar xzvf icu4c-4_8-src.tgz
-cd icu/source
-./configure --prefix=$PREFIX
-#./runConfigureICU MacOSX --prefix=$PREFIX --with-library-bits=64 --disable-samples --enable-static # Mac OS X >=10.6
-make
-make install
+getunpack http://download.icu-project.org/files/icu4c/4.8.1.1/icu4c-4_8_1_1-src.tgz
+# cd icu/source && ./runConfigureICU MacOSX --prefix=$PREFIX --with-library-bits=64 --disable-samples --enable-static # Mac OS X >=10.6
+buildinstall icu/source
 
 # Mozilla SpiderMonkey
 # The latest source is in http://hg.mozilla.org/mozilla-central/archive/tip.tar.gz.
 # But we'll use the latest standalone version.
 
-cd $PREFIX/src
-wget http://ftp.mozilla.org/pub/mozilla.org/js/js185-1.0.0.tar.gz
-tar xzvf js185-1.0.0.tar.gz
-cd js-1.8.5/js/src
-./configure --prefix=$PREFIX
-make
-make install
+getunpack http://ftp.mozilla.org/pub/mozilla.org/js/js185-1.0.0.tar.gz
+buildinstall js-1.8.5/js/src
 
 # Make sure couchdb is linked to the libraries it depends on.
 # I used to have "export LD_LIBRARY_PATH=$PREFIX/lib", but this is hackish.
@@ -122,18 +95,12 @@ make install
 # Note to self:
 # This doesn't seem to help on Mac OS X, though. The best solution is to add
 # "export DYLD_LIBRARY_PATH=$PREFIX/lib" (expanding $PREFIX) at the beginning of
-# $PREFIX/bin/erlang, which is actually just a shell script.
+# $PREFIX/bin/couchdb, which is actually just a shell script.
 
 export LD_RUN_PATH=$PREFIX/lib # Works on WebFaction!
 
-cd $PREFIX/src
-wget http://mirror.cc.columbia.edu/pub/software/apache//couchdb/1.1.0/apache-couchdb-1.1.0.tar.gz
-tar xzvf apache-couchdb-1.1.0.tar.gz
-cd apache-couchdb-1.1.0
-./configure --prefix=$PREFIX --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
-make
-make install
-
+getunpack http://mirror.cc.columbia.edu/pub/software/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
+buildinstall apache-couchdb-1.1.1 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 
 
 ###############################################################################
