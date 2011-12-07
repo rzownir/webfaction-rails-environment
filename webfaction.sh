@@ -128,6 +128,13 @@ getunpack http://www.sqlite.org/sqlite-autoconf-3070900.tar.gz
 buildinstall sqlite-autoconf-3070900
 
 ###############################################################################
+# libyaml 0.1.4
+# For ruby 1.9.3 psych
+
+getunpack http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
+buildinstall yaml-0.1.4
+
+###############################################################################
 # Install either Ruby 1.9.3-p0 or latest from 1.9.3 subversion branch
 
 if [ $RUBYSVN == true ]
@@ -136,13 +143,12 @@ then #-------------------------------------------------------------------------
 	svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_9_3/
 	cd ruby_1_9_3
 	autoconf
-	./configure --prefix=$PREFIX
+	./configure --prefix=$PREFIX --with-opt-dir=$PREFIX
 	make
 	make install
-	#make install-doc # Documentation generation is memory intensive!
 else #-------------------------------------------------------------------------
 	getunpack http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz
-	buildinstall ruby-1.9.3-p0
+	buildinstall ruby-1.9.3-p0 --with-opt-dir=$PREFIX
 fi #---------------------------------------------------------------------------
 
 # RubyGems installs with Ruby 1.9.3
@@ -153,7 +159,7 @@ $PREFIX/bin/gem update # Ensure preinstalled gems are up to date
 gem install rack rails thin unicorn passenger capistrano --no-rdoc --no-ri
 gem install sqlite3 -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
 gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
-
+#gem install psych -- --with-opt-dir=$PREFIX --no-ri --no-rdoc # In case psych doesn't install with ruby
 
 ###############################################################################
 # Nginx 1.0.10
@@ -178,6 +184,12 @@ gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
 # sure to include the nginx-upstream-fair module.
 
 export PASSENGER_ROOT=`passenger-config --root`
+
+# Specify place for passenger module to compile.
+# /tmp won't do (permission denied error because of execbit)
+mkdir -p $PREFIX/var/tmp
+chmod 777 $PREFIX/var/tmp
+export TMPDIR=$PREFIX/var/tmp
 
 # Note:
 # If upgrading Passenger, and you installed curl along with CouchDB, run:
@@ -244,8 +256,10 @@ ln -s $HOME/webapps $PREFIX/var/www
 # where you can instead of ports. They provide lower latency and eliminate
 # unnecessary exposure.
 
-mkdir $PREFIX/var/tmp
-chmod 777 $PREFIX/var/tmp
+# (Already done above for compiling passenger nginx module)
+
+#mkdir $PREFIX/var/tmp
+#chmod 777 $PREFIX/var/tmp
 
 ###############################################################################
 # Create a directory to store rc scripts for daemons.

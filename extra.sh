@@ -100,6 +100,12 @@ buildinstall js-1.8.5/js/src
 export LD_RUN_PATH=$PREFIX/lib # Works on WebFaction!
 
 getunpack http://mirror.cc.columbia.edu/pub/software/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
+
+# Getting error in CouchDB 1.1.1:
+# couch_js/utf8.h:19:7: error: no newline at end of file
+# So let's add that newline with:
+echo "" >> $PREFIX/src/apache-couchdb-1.1.1/src/couchdb/priv/couch_js/utf8.h
+
 buildinstall apache-couchdb-1.1.1 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 
 

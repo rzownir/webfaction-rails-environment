@@ -109,4 +109,4 @@ The script `extra.sh` contains some additional goodies:
 * CouchDB
 
 ## Experimental
-The script `encap.sh` is experimental. The goal is to encapsulate applications, making package management easier. I don't recommend it at this point.
+The script `rpm.sh` is experimental. The goal is to manage private application environment packages. It is not meant to be run at this point.
