@@ -28,12 +28,12 @@ function buildinstall {
 getunpack https://github.com/downloads/libevent/libevent/libevent-2.0.16-stable.tar.gz
 buildinstall libevent-2.0.16-stable
 
-getunpack http://memcached.googlecode.com/files/memcached-1.4.10.tar.gz
-buildinstall memcached-1.4.10
+getunpack http://memcached.googlecode.com/files/memcached-1.4.11.tar.gz
+buildinstall memcached-1.4.11
 
-getunpack http://launchpad.net/libmemcached/1.0/1.0.2/+download/libmemcached-1.0.2.tar.gz
-export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit) [Old, don't know if true anymore]
-buildinstall libmemcached-1.0.2
+getunpack http://launchpad.net/libmemcached/1.0/1.0.3/+download/libmemcached-1.0.3.tar.gz
+#export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit) [Old, don't know if true anymore]
+buildinstall libmemcached-1.0.3
 
 # All ruby memcached client
 gem install memcache-client --no-rdoc --no-ri
@@ -48,8 +48,8 @@ ldconfig $PREFIX/lib
 ###############################################################################
 # PHP
 
-getunpack http://www.php.net/distributions/php-5.3.8.tar.gz
-buildinstall php-5.3.8 --with-mysql --with-zlib --with-gettext --with-gdbm
+getunpack http://www.php.net/distributions/php-5.3.9.tar.gz
+buildinstall php-5.3.9 --with-mysql --with-zlib --with-gettext --with-gdbm
 
 # To avoid time zone warnings
 cat > $PREFIX/etc/php.ini << EOF
@@ -64,16 +64,16 @@ getunpack http://www.lighttpd.net/download/spawn-fcgi-1.6.3.tar.gz
 buildinstall spawn-fcgi-1.6.3
 
 ###############################################################################
-# Erlang R14B04
+# Erlang R15B
 
-getunpack http://www.erlang.org/download/otp_src_R14B04.tar.gz
-buildinstall otp_src_R14B04 #--enable-darwin-64bit # Mac OS X >=10.6
+getunpack http://www.erlang.org/download/otp_src_R15B.tar.gz
+buildinstall otp_src_R15B #--enable-darwin-64bit # Mac OS X >=10.6
 
 ###############################################################################
 # CouchDB (requires Erlang)
 
-getunpack http://curl.haxx.se/download/curl-7.23.1.tar.gz
-buildinstall curl-7.23.1
+getunpack http://curl.haxx.se/download/curl-7.24.0.tar.gz
+buildinstall curl-7.24.0
 
 getunpack http://download.icu-project.org/files/icu4c/4.8.1.1/icu4c-4_8_1_1-src.tgz
 # cd icu/source && ./runConfigureICU MacOSX --prefix=$PREFIX --with-library-bits=64 --disable-samples --enable-static # Mac OS X >=10.6

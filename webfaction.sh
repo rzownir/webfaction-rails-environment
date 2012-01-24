@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WebFaction Application Stack Build Script
-# (c) 2008-2011 - Ronald M. Zownir
+# (c) 2008-2012 - Ronald M. Zownir
 
 ###############################################################################
 # Edit these variables as instructed in the README.
@@ -11,7 +11,7 @@ export APP_PORT=4000
 export MONIT_PORT=4002
 export RUBYSVN=false
 
-# My server is a Xeon 3060 (32-bit mode). Safe CFLAGS:
+# My server is a Xeon E5620 (32-bit mode). Safe CFLAGS:
 #CHOST="i686-pc-linux-gnu"
 #CFLAGS="-march=prescott -O2 -pipe -fomit-frame-pointer"
 #CXXFLAGS="${CFLAGS}"
@@ -104,28 +104,28 @@ function buildinstall {
 }
 
 ###############################################################################
-# Git 1.7.8
+# Git 1.7.8.4
 # Git is a great source code management system. Git will be used to retrieve
 # the third party nginx-upstream-fair module for nginx.
 
-getunpack http://git-core.googlecode.com/files/git-1.7.8.tar.gz
-cd git-1.7.8
+getunpack http://git-core.googlecode.com/files/git-1.7.8.4.tar.gz
+cd git-1.7.8.4
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://git-core.googlecode.com/files/git-manpages-1.7.8.tar.gz
-tar xzvf git-manpages-1.7.8.tar.gz
-rm git-manpages-1.7.8.tar.gz
+wget http://git-core.googlecode.com/files/git-manpages-1.7.8.4.tar.gz
+tar xzvf git-manpages-1.7.8.4.tar.gz
+rm git-manpages-1.7.8.4.tar.gz
 
 ###############################################################################
-# SQLite3 3.7.9
+# SQLite3 3.7.10
 # The latest sqlite3-ruby gem requires a version of SQLite3 that may be newer
 # than what is on your system. Here's how to install your own up-to-date copy.
 
-getunpack http://www.sqlite.org/sqlite-autoconf-3070900.tar.gz
-buildinstall sqlite-autoconf-3070900
+getunpack http://www.sqlite.org/sqlite-autoconf-3071000.tar.gz
+buildinstall sqlite-autoconf-3071000
 
 ###############################################################################
 # libyaml 0.1.4
@@ -153,16 +153,16 @@ fi #---------------------------------------------------------------------------
 
 # RubyGems installs with Ruby 1.9.3
 $PREFIX/bin/gem update --system # Ensure RubyGems is up to date
-$PREFIX/bin/gem update # Ensure preinstalled gems are up to date
+$PREFIX/bin/gem update --no-ri --no-rdoc # Ensure preinstalled gems are up to date
 
 # Install some gems...
 gem install rack rails thin unicorn passenger capistrano --no-rdoc --no-ri
-gem install sqlite3 -- --with-sqlite3-dir=$PREFIX --no-ri --no-rdoc
-gem install mysql -- --with-mysql-config=/usr/bin/mysql_config --no-rdoc --no-ri
-#gem install psych -- --with-opt-dir=$PREFIX --no-ri --no-rdoc # In case psych doesn't install with ruby
+gem install sqlite3 --no-ri --no-rdoc -- --with-sqlite3-dir=$PREFIX
+gem install mysql --no-rdoc --no-ri -- --with-mysql-config=/usr/bin/mysql_config
+#gem install psych --no-ri --no-rdoc -- --with-opt-dir=$PREFIX # In case psych doesn't install with ruby
 
 ###############################################################################
-# Nginx 1.0.10
+# Nginx 1.0.11
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -196,15 +196,15 @@ export TMPDIR=$PREFIX/var/tmp
 # export LD_RUN_PATH=$PREFIX/lib
 # right here to prevent PassengerWatchdog from failing to start with nginx.
 
-getunpack http://www.openssl.org/source/openssl-1.0.0e.tar.gz
-getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.20.tar.gz
+getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.21.tar.gz
 getunpack http://zlib.net/zlib-1.2.5.tar.gz
-getunpack http://nginx.org/download/nginx-1.0.10.tar.gz
+getunpack http://www.openssl.org/source/openssl-1.0.0g.tar.gz
+getunpack http://nginx.org/download/nginx-1.0.11.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-buildinstall nginx-1.0.10 \
---with-pcre=$PREFIX/src/pcre-8.20 \
+buildinstall nginx-1.0.11 \
+--with-pcre=$PREFIX/src/pcre-8.21 \
 --with-zlib=$PREFIX/src/zlib-1.2.5 \
---with-openssl=$PREFIX/src/openssl-1.0.0e \
+--with-openssl=$PREFIX/src/openssl-1.0.0g \
 --with-http_realip_module \
 --with-http_gzip_static_module \
 --with-http_ssl_module \
@@ -575,12 +575,12 @@ server {
 EOF
 
 ###############################################################################
-# Monit 5.3.1
+# Monit 5.3.2
 # Monit is a watchdog that manages processes. It makes sure that processes are
 # running and that they behave.
 
-getunpack http://mmonit.com/monit/dist/monit-5.3.1.tar.gz
-buildinstall monit-5.3.1
+getunpack http://mmonit.com/monit/dist/monit-5.3.2.tar.gz
+buildinstall monit-5.3.2
 
 # Note to self:
 # If configure fails, try:
@@ -692,10 +692,25 @@ chmod 755 $PREFIX/etc/rc.d/boot
 crontab -l | grep -v "@reboot $PREFIX/etc/rc.d/boot" > $PREFIX/var/tmp/oldcrontab
 cat > $PREFIX/var/tmp/newcrontab << EOF
 @reboot $PREFIX/etc/rc.d/boot
+/usr/sbin/logrotate -s $PREFIX/var/lib/logrotate.status $PREFIX/etc/logrotate.conf
 EOF
 cat $PREFIX/var/tmp/oldcrontab >> $PREFIX/var/tmp/newcrontab
 crontab $PREFIX/var/tmp/newcrontab
 rm $PREFIX/var/tmp/oldcrontab $PREFIX/var/tmp/newcrontab
+
+mkdir -p $PREFIX/var/lib
+touch $PREFIX/var/lib/logrotate.status
+
+cat > $PREFIX/etc/logrotate.conf << EOF
+$HOME/logs/user/nginx/*.log {
+  monthly
+  rotate 6
+  compress
+  postrotate
+    $PREFIX/etc/rc.d/nginx restart
+  endscript
+}
+EOF
 
 # Note to self:
 # crontab isn't working on my ArchLinux machine. The crontab file works
