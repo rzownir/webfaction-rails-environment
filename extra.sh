@@ -25,15 +25,15 @@ function buildinstall {
 ###############################################################################
 # Memcached
 
-getunpack https://github.com/downloads/libevent/libevent/libevent-2.0.16-stable.tar.gz
-buildinstall libevent-2.0.16-stable
+getunpack https://github.com/downloads/libevent/libevent/libevent-2.0.19-stable.tar.gz
+buildinstall libevent-2.0.19-stable
 
-getunpack http://memcached.googlecode.com/files/memcached-1.4.11.tar.gz
-buildinstall memcached-1.4.11
+getunpack http://memcached.googlecode.com/files/memcached-1.4.13.tar.gz
+buildinstall memcached-1.4.13
 
-getunpack http://launchpad.net/libmemcached/1.0/1.0.3/+download/libmemcached-1.0.3.tar.gz
+getunpack https://launchpad.net/libmemcached/1.0/1.0.9/+download/libmemcached-1.0.9.tar.gz
 #export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit) [Old, don't know if true anymore]
-buildinstall libmemcached-1.0.3
+buildinstall libmemcached-1.0.9
 
 # All ruby memcached client
 gem install memcache-client --no-rdoc --no-ri
@@ -48,8 +48,8 @@ ldconfig $PREFIX/lib
 ###############################################################################
 # PHP
 
-getunpack http://www.php.net/distributions/php-5.3.9.tar.gz
-buildinstall php-5.3.9 --with-mysql --with-zlib --with-gettext --with-gdbm
+getunpack http://www.php.net/distributions/php-5.4.4.tar.gz
+buildinstall php-5.4.4 --with-mysql --with-zlib --with-gettext --with-gdbm
 
 # To avoid time zone warnings
 cat > $PREFIX/etc/php.ini << EOF
@@ -66,16 +66,16 @@ buildinstall spawn-fcgi-1.6.3
 ###############################################################################
 # Erlang R15B
 
-getunpack http://www.erlang.org/download/otp_src_R15B.tar.gz
-buildinstall otp_src_R15B #--enable-darwin-64bit # Mac OS X >=10.6
+getunpack http://www.erlang.org/download/otp_src_R15B01.tar.gz
+buildinstall otp_src_R15B01 #--enable-darwin-64bit # Mac OS X >=10.6
 
 ###############################################################################
 # CouchDB (requires Erlang)
 
-getunpack http://curl.haxx.se/download/curl-7.24.0.tar.gz
-buildinstall curl-7.24.0
+getunpack http://curl.haxx.se/download/curl-7.26.0.tar.gz
+buildinstall curl-7.26.0
 
-getunpack http://download.icu-project.org/files/icu4c/4.8.1.1/icu4c-4_8_1_1-src.tgz
+getunpack http://download.icu-project.org/files/icu4c/49.1.2/icu4c-49_1_2-src.tgz
 # cd icu/source && ./runConfigureICU MacOSX --prefix=$PREFIX --with-library-bits=64 --disable-samples --enable-static # Mac OS X >=10.6
 buildinstall icu/source
 
@@ -99,14 +99,14 @@ buildinstall js-1.8.5/js/src
 
 export LD_RUN_PATH=$PREFIX/lib # Works on WebFaction!
 
-getunpack http://mirror.cc.columbia.edu/pub/software/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
+getunpack http://apache.mirrors.pair.com/couchdb/releases/1.2.0/apache-couchdb-1.2.0.tar.gz
 
 # Getting error in CouchDB 1.1.1:
 # couch_js/utf8.h:19:7: error: no newline at end of file
 # So let's add that newline with:
-echo "" >> $PREFIX/src/apache-couchdb-1.1.1/src/couchdb/priv/couch_js/utf8.h
+#echo "" >> $PREFIX/src/apache-couchdb-1.1.1/src/couchdb/priv/couch_js/utf8.h
 
-buildinstall apache-couchdb-1.1.1 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
+buildinstall apache-couchdb-1.2.0 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 
 
 ###############################################################################

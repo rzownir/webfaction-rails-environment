@@ -5,14 +5,14 @@ users in mind, but is fairly generic. The directories `$HOME/logs/user` and
 `$HOME/webapps/$APP_NAME` are assumed to exist.
 
 ## What's Provided
-* Git 1.7.8.4
-* SQLite3 3.7.10
-* Your choice of Ruby 1.9.3-p0 or latest Ruby from the 1.9.3 subversion branch
+* Git 1.7.11.1
+* SQLite3 3.7.13
+* Your choice of Ruby 1.9.3-p194 or latest Ruby from the 1.9.3 subversion branch
 * Latest RubyGems
 * Gems: rack, rails, thin, unicorn, passenger, capistrano, sqlite3-ruby, mysql
-* nginx 1.0.11 (with nginx-upstream-fair module for fair load balancing and
+* nginx 1.2.2 (with nginx-upstream-fair module for fair load balancing and
   passenger module)
-* Monit 5.3.2
+* Monit 5.4
 * Startup scripts and working default configuration files for monit and nginx
 
 ## Options
@@ -107,6 +107,3 @@ The script `extra.sh` contains some additional goodies:
 * PHP + spawn-fcgi
 * Erlang
 * CouchDB
-
-## Experimental
-The script `rpm.sh` is experimental. The goal is to manage private application environment packages. It is not meant to be run at this point.
