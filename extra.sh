@@ -32,6 +32,7 @@ getunpack http://memcached.googlecode.com/files/memcached-1.4.13.tar.gz
 buildinstall memcached-1.4.13
 
 # [!] Getting a compile error for libmemcached, missing tr1/cinttypes.
+# !!! Try installing second ruby gem before attempting to install this. If it works, this isn't necessary.
 getunpack https://launchpad.net/libmemcached/1.0/1.0.9/+download/libmemcached-1.0.9.tar.gz
 #export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit) [Old, don't know 
 buildinstall libmemcached-1.0.9
