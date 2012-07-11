@@ -31,8 +31,9 @@ buildinstall libevent-2.0.19-stable
 getunpack http://memcached.googlecode.com/files/memcached-1.4.13.tar.gz
 buildinstall memcached-1.4.13
 
+# [!] Getting a compile error for libmemcached, missing tr1/cinttypes.
 getunpack https://launchpad.net/libmemcached/1.0/1.0.9/+download/libmemcached-1.0.9.tar.gz
-#export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit) [Old, don't know if true anymore]
+#export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit) [Old, don't know 
 buildinstall libmemcached-1.0.9
 
 # All ruby memcached client
@@ -64,7 +65,7 @@ getunpack http://www.lighttpd.net/download/spawn-fcgi-1.6.3.tar.gz
 buildinstall spawn-fcgi-1.6.3
 
 ###############################################################################
-# Erlang R15B
+# Erlang
 
 getunpack http://www.erlang.org/download/otp_src_R15B01.tar.gz
 buildinstall otp_src_R15B01 #--enable-darwin-64bit # Mac OS X >=10.6
