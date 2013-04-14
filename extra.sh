@@ -25,17 +25,18 @@ function buildinstall {
 ###############################################################################
 # Memcached
 
-getunpack https://github.com/downloads/libevent/libevent/libevent-2.0.19-stable.tar.gz
-buildinstall libevent-2.0.19-stable
+getunpack https://github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz
+buildinstall libevent-2.0.21-stable
 
-getunpack http://memcached.googlecode.com/files/memcached-1.4.13.tar.gz
-buildinstall memcached-1.4.13
+getunpack http://memcached.googlecode.com/files/memcached-1.4.15.tar.gz
+buildinstall memcached-1.4.15
 
+# (20130413 Not necessary, memcached gem install without libmemcached)
 # [!] Getting a compile error for libmemcached, missing tr1/cinttypes.
 # !!! Try installing second ruby gem before attempting to install this. If it works, this isn't necessary.
-getunpack https://launchpad.net/libmemcached/1.0/1.0.9/+download/libmemcached-1.0.9.tar.gz
+#getunpack https://launchpad.net/libmemcached/1.0/1.0.17/+download/libmemcached-1.0.17.tar.gz
 #export CFLAGS="-march=i686" # Fixes compile problem (Remove on 64-bit) [Old, don't know 
-buildinstall libmemcached-1.0.9
+#buildinstall libmemcached-1.0.17
 
 # All ruby memcached client
 gem install memcache-client --no-rdoc --no-ri
@@ -50,8 +51,8 @@ ldconfig $PREFIX/lib
 ###############################################################################
 # PHP
 
-getunpack http://www.php.net/distributions/php-5.4.4.tar.gz
-buildinstall php-5.4.4 --with-mysql --with-zlib --with-gettext --with-gdbm
+getunpack http://www.php.net/distributions/php-5.4.14.tar.gz
+buildinstall php-5.4.14 --with-mysql --with-zlib --with-gettext --with-gdbm
 
 # To avoid time zone warnings
 cat > $PREFIX/etc/php.ini << EOF
@@ -68,16 +69,16 @@ buildinstall spawn-fcgi-1.6.3
 ###############################################################################
 # Erlang
 
-getunpack http://www.erlang.org/download/otp_src_R15B01.tar.gz
-buildinstall otp_src_R15B01 #--enable-darwin-64bit # Mac OS X >=10.6
+getunpack http://www.erlang.org/download/otp_src_R16B.tar.gz
+buildinstall otp_src_R16B #--enable-darwin-64bit # Mac OS X >=10.6
 
 ###############################################################################
 # CouchDB (requires Erlang)
 
-getunpack http://curl.haxx.se/download/curl-7.26.0.tar.gz
-buildinstall curl-7.26.0
+getunpack http://curl.haxx.se/download/curl-7.30.0.tar.gz
+buildinstall curl-7.30.0
 
-getunpack http://download.icu-project.org/files/icu4c/49.1.2/icu4c-49_1_2-src.tgz
+getunpack http://download.icu-project.org/files/icu4c/51.1/icu4c-51_1-src.tgz
 # cd icu/source && ./runConfigureICU MacOSX --prefix=$PREFIX --with-library-bits=64 --disable-samples --enable-static # Mac OS X >=10.6
 buildinstall icu/source
 
@@ -85,8 +86,8 @@ buildinstall icu/source
 # The latest source is in http://hg.mozilla.org/mozilla-central/archive/tip.tar.gz.
 # But we'll use the latest standalone version.
 
-getunpack http://ftp.mozilla.org/pub/mozilla.org/js/js185-1.0.0.tar.gz
-buildinstall js-1.8.5/js/src
+getunpack http://ftp.mozilla.org/pub/mozilla.org/js/mozjs17.0.0.tar.gz
+buildinstall mozjs17.0.0/js/src
 
 # Make sure couchdb is linked to the libraries it depends on.
 # I used to have "export LD_LIBRARY_PATH=$PREFIX/lib", but this is hackish.
@@ -101,14 +102,14 @@ buildinstall js-1.8.5/js/src
 
 export LD_RUN_PATH=$PREFIX/lib # Works on WebFaction!
 
-getunpack http://apache.mirrors.pair.com/couchdb/releases/1.2.0/apache-couchdb-1.2.0.tar.gz
+getunpack http://apache.cs.utah.edu/couchdb/source/1.3.0/apache-couchdb-1.3.0.tar.gz
 
 # Getting error in CouchDB 1.1.1:
 # couch_js/utf8.h:19:7: error: no newline at end of file
 # So let's add that newline with:
 #echo "" >> $PREFIX/src/apache-couchdb-1.1.1/src/couchdb/priv/couch_js/utf8.h
 
-buildinstall apache-couchdb-1.2.0 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
+buildinstall apache-couchdb-1.3.0 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 
 
 ###############################################################################

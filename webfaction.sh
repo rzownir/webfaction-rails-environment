@@ -104,54 +104,78 @@ function buildinstall {
 }
 
 ###############################################################################
-# Git 1.7.11.1
+# Git 1.8.2.1
 # Git is a great source code management system. Git will be used to retrieve
 # the third party nginx-upstream-fair module for nginx.
 
-getunpack http://git-core.googlecode.com/files/git-1.7.11.1.tar.gz
-cd git-1.7.11.1
+getunpack http://git-core.googlecode.com/files/git-1.8.2.1.tar.gz
+cd git-1.8.2.1
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://git-core.googlecode.com/files/git-manpages-1.7.11.1.tar.gz
-tar xzvf git-manpages-1.7.11.1.tar.gz
-rm git-manpages-1.7.11.1.tar.gz
+wget http://git-core.googlecode.com/files/git-manpages-1.8.2.1.tar.gz
+tar xzvf git-manpages-1.8.2.1.tar.gz
+rm git-manpages-1.8.2.1.tar.gz
 
 ###############################################################################
-# SQLite3 3.7.13
+# SQLite3 3.7.16.2
 # The latest sqlite3-ruby gem requires a version of SQLite3 that may be newer
 # than what is on your system. Here's how to install your own up-to-date copy.
 
-getunpack http://www.sqlite.org/sqlite-autoconf-3071300.tar.gz
-buildinstall sqlite-autoconf-3071300
+getunpack http://www.sqlite.org/2013/sqlite-autoconf-3071602.tar.gz
+buildinstall sqlite-autoconf-3071602
+
+###############################################################################
+# openssl 1.0.1e
+# For ruby openssl
+
+getunpack http://www.openssl.org/source/openssl-1.0.1e.tar.gz
+cd $PREFIX/src/openssl-1.0.1e
+./config --prefix=$PREFIX
+make
+make install
+
+###############################################################################
+# libffi 3.0.13
+# For ruby fiddle (optional)
+
+getunpack ftp://sourceware.org/pub/libffi/libffi-3.0.13.tar.gz
+buildinstall libffi-3.0.13
 
 ###############################################################################
 # libyaml 0.1.4
-# For ruby 1.9.3 psych
+# For ruby psych
 
 getunpack http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
 buildinstall yaml-0.1.4
 
 ###############################################################################
-# Install either Ruby 1.9.3-p194 or latest from 1.9.3 subversion branch
+# gdbm 1.10
+# For ruby gdbm
+
+getunpack ftp://ftp.gnu.org/gnu/gdbm/gdbm-1.10.tar.gz
+buildinstall gdbm-1.10
+
+###############################################################################
+# Install either Ruby 2.0.0 or latest from 2.0.0 subversion branch
 
 if [ $RUBYSVN == true ]
 then #-------------------------------------------------------------------------
 	cd $PREFIX/src
-	svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_1_9_3/
-	cd ruby_1_9_3
+	svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_2_0_0/
+	cd ruby_2_0_0
 	autoconf
-	./configure --prefix=$PREFIX --with-opt-dir=$PREFIX
+	./configure --prefix=$PREFIX --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX
 	make
 	make install
 else #-------------------------------------------------------------------------
-	getunpack http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p194.tar.gz
-	buildinstall ruby-1.9.3-p194 --with-opt-dir=$PREFIX
+	getunpack http://ftp.ruby-lang.org/pub/ruby/2.0/ruby-2.0.0-p0.tar.gz
+	buildinstall ruby-2.0.0-p0 --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX
 fi #---------------------------------------------------------------------------
 
-# RubyGems installs with Ruby 1.9.3
+# RubyGems installs with Ruby 2.0.0
 $PREFIX/bin/gem update --system # Ensure RubyGems is up to date
 $PREFIX/bin/gem update --no-ri --no-rdoc # Ensure preinstalled gems are up to date
 
@@ -159,10 +183,11 @@ $PREFIX/bin/gem update --no-ri --no-rdoc # Ensure preinstalled gems are up to da
 gem install rack rails thin unicorn passenger capistrano --no-rdoc --no-ri
 gem install sqlite3 --no-ri --no-rdoc -- --with-sqlite3-dir=$PREFIX
 gem install mysql --no-rdoc --no-ri -- --with-mysql-config=/usr/bin/mysql_config
+gem install pg --no-rdoc --no-ri
 #gem install psych --no-ri --no-rdoc -- --with-opt-dir=$PREFIX # In case psych doesn't install with ruby
 
 ###############################################################################
-# Nginx 1.2.2
+# Nginx 1.2.8
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -196,15 +221,15 @@ export TMPDIR=$PREFIX/var/tmp
 # export LD_RUN_PATH=$PREFIX/lib
 # right here to prevent PassengerWatchdog from failing to start with nginx.
 
-getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.31.tar.gz
+getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.32.tar.gz
 getunpack http://zlib.net/zlib-1.2.7.tar.gz
-getunpack http://www.openssl.org/source/openssl-1.0.1c.tar.gz
-getunpack http://nginx.org/download/nginx-1.2.2.tar.gz
+getunpack http://www.openssl.org/source/openssl-1.0.1e.tar.gz
+getunpack http://nginx.org/download/nginx-1.2.8.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-buildinstall nginx-1.2.2 \
---with-pcre=$PREFIX/src/pcre-8.31 \
+buildinstall nginx-1.2.8 \
+--with-pcre=$PREFIX/src/pcre-8.32 \
 --with-zlib=$PREFIX/src/zlib-1.2.7 \
---with-openssl=$PREFIX/src/openssl-1.0.1c \
+--with-openssl=$PREFIX/src/openssl-1.0.1e \
 --with-http_realip_module \
 --with-http_gzip_static_module \
 --with-http_ssl_module \
@@ -575,12 +600,12 @@ server {
 EOF
 
 ###############################################################################
-# Monit 5.4
+# Monit 5.5
 # Monit is a watchdog that manages processes. It makes sure that processes are
 # running and that they behave.
 
-getunpack http://mmonit.com/monit/dist/monit-5.4.tar.gz
-buildinstall monit-5.4
+getunpack http://mmonit.com/monit/dist/monit-5.5.tar.gz
+buildinstall monit-5.5
 
 # Note to self:
 # If configure fails, try:
