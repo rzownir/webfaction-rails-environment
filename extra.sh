@@ -28,8 +28,8 @@ function buildinstall {
 getunpack https://github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz
 buildinstall libevent-2.0.21-stable
 
-getunpack http://memcached.googlecode.com/files/memcached-1.4.15.tar.gz
-buildinstall memcached-1.4.15
+getunpack http://www.memcached.org/files/memcached-1.4.17.tar.gz
+buildinstall memcached-1.4.17
 
 # (20130413 Not necessary, memcached gem install without libmemcached)
 # [!] Getting a compile error for libmemcached, missing tr1/cinttypes.
@@ -51,8 +51,8 @@ ldconfig $PREFIX/lib
 ###############################################################################
 # PHP
 
-getunpack http://www.php.net/distributions/php-5.4.14.tar.gz
-buildinstall php-5.4.14 --with-mysql --with-zlib --with-gettext --with-gdbm
+getunpack http://www.php.net/distributions/php-5.5.7.tar.gz
+buildinstall php-5.5.7 --with-mysql --with-zlib --with-gettext --with-gdbm
 
 # To avoid time zone warnings
 cat > $PREFIX/etc/php.ini << EOF
@@ -69,16 +69,16 @@ buildinstall spawn-fcgi-1.6.3
 ###############################################################################
 # Erlang
 
-getunpack http://www.erlang.org/download/otp_src_R16B.tar.gz
-buildinstall otp_src_R16B #--enable-darwin-64bit # Mac OS X >=10.6
+getunpack http://www.erlang.org/download/otp_src_R16B03.tar.gz
+buildinstall otp_src_R16B03 #--enable-darwin-64bit # Mac OS X >=10.6
 
 ###############################################################################
 # CouchDB (requires Erlang)
 
-getunpack http://curl.haxx.se/download/curl-7.30.0.tar.gz
-buildinstall curl-7.30.0
+getunpack http://curl.haxx.se/download/curl-7.34.0.tar.gz
+buildinstall curl-7.34.0
 
-getunpack http://download.icu-project.org/files/icu4c/51.1/icu4c-51_1-src.tgz
+getunpack http://download.icu-project.org/files/icu4c/52.1/icu4c-52_1-src.tgz
 # cd icu/source && ./runConfigureICU MacOSX --prefix=$PREFIX --with-library-bits=64 --disable-samples --enable-static # Mac OS X >=10.6
 buildinstall icu/source
 
@@ -86,8 +86,10 @@ buildinstall icu/source
 # The latest source is in http://hg.mozilla.org/mozilla-central/archive/tip.tar.gz.
 # But we'll use the latest standalone version.
 
-getunpack http://ftp.mozilla.org/pub/mozilla.org/js/mozjs17.0.0.tar.gz
-buildinstall mozjs17.0.0/js/src
+cd $PREFIX/src
+wget https://ftp.mozilla.org/pub/mozilla.org/js/mozjs-24.2.0.tar.bz2
+tar xjvf mozjs-24.2.0.tar.bz2
+buildinstall mozjs-24.2.0/js/src
 
 # Make sure couchdb is linked to the libraries it depends on.
 # I used to have "export LD_LIBRARY_PATH=$PREFIX/lib", but this is hackish.
@@ -102,14 +104,14 @@ buildinstall mozjs17.0.0/js/src
 
 export LD_RUN_PATH=$PREFIX/lib # Works on WebFaction!
 
-getunpack http://apache.cs.utah.edu/couchdb/source/1.3.0/apache-couchdb-1.3.0.tar.gz
+getunpack http://apache.cs.utah.edu/couchdb/source/1.5.0/apache-couchdb-1.5.0.tar.gz
 
 # Getting error in CouchDB 1.1.1:
 # couch_js/utf8.h:19:7: error: no newline at end of file
 # So let's add that newline with:
 #echo "" >> $PREFIX/src/apache-couchdb-1.1.1/src/couchdb/priv/couch_js/utf8.h
 
-buildinstall apache-couchdb-1.3.0 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
+buildinstall apache-couchdb-1.5.0 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
 
 
 ###############################################################################

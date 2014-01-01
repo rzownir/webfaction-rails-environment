@@ -5,14 +5,14 @@ users in mind, but is fairly generic. The directories `$HOME/logs/user` and
 `$HOME/webapps/$APP_NAME` are assumed to exist.
 
 ## What's Provided
-* Git 1.8.2.1
-* SQLite3 3.7.16.2
-* Your choice of Ruby 2.0.0-p0 or latest Ruby from the 2.0.0 subversion branch
+* Git 1.8.5.2
+* SQLite3 3.8.2
+* Your choice of Ruby 2.1.0 or latest Ruby from the 2.1 subversion branch
 * Latest RubyGems
 * Gems: rack, rails, thin, unicorn, passenger, capistrano, sqlite3-ruby, mysql
-* nginx 1.2.8 (with nginx-upstream-fair module for fair load balancing and
+* nginx 1.5.8 (with nginx-upstream-fair module for fair load balancing and
   passenger module)
-* Monit 5.5
+* Monit 5.6
 * Startup scripts and working default configuration files for monit and nginx
 
 ## Options

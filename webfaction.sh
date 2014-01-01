@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WebFaction Application Stack Build Script
-# (c) 2008-2012 - Ronald M. Zownir
+# (c) 2008-2014 - Ronald M. Zownir
 
 ###############################################################################
 # Edit these variables as instructed in the README.
@@ -104,28 +104,28 @@ function buildinstall {
 }
 
 ###############################################################################
-# Git 1.8.2.1
+# Git 1.8.5.2
 # Git is a great source code management system. Git will be used to retrieve
 # the third party nginx-upstream-fair module for nginx.
 
-getunpack http://git-core.googlecode.com/files/git-1.8.2.1.tar.gz
-cd git-1.8.2.1
+getunpack http://git-core.googlecode.com/files/git-1.8.5.2.tar.gz
+cd git-1.8.5.2
 ./configure --prefix=$PREFIX
 make all
 make install
 
 cd $PREFIX/share/man/
-wget http://git-core.googlecode.com/files/git-manpages-1.8.2.1.tar.gz
-tar xzvf git-manpages-1.8.2.1.tar.gz
-rm git-manpages-1.8.2.1.tar.gz
+wget http://git-core.googlecode.com/files/git-manpages-1.8.5.2.tar.gz
+tar xzvf git-manpages-1.8.5.2.tar.gz
+rm git-manpages-1.8.5.2.tar.gz
 
 ###############################################################################
-# SQLite3 3.7.16.2
+# SQLite3 3.8.2
 # The latest sqlite3-ruby gem requires a version of SQLite3 that may be newer
 # than what is on your system. Here's how to install your own up-to-date copy.
 
-getunpack http://www.sqlite.org/2013/sqlite-autoconf-3071602.tar.gz
-buildinstall sqlite-autoconf-3071602
+getunpack http://www.sqlite.org/2013/sqlite-autoconf-3080200.tar.gz
+buildinstall sqlite-autoconf-3080200
 
 ###############################################################################
 # openssl 1.0.1e
@@ -159,23 +159,23 @@ getunpack ftp://ftp.gnu.org/gnu/gdbm/gdbm-1.10.tar.gz
 buildinstall gdbm-1.10
 
 ###############################################################################
-# Install either Ruby 2.0.0 or latest from 2.0.0 subversion branch
+# Install either Ruby 2.1.0 or latest from 2.1 subversion branch
 
 if [ $RUBYSVN == true ]
 then #-------------------------------------------------------------------------
 	cd $PREFIX/src
-	svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_2_0_0/
-	cd ruby_2_0_0
+	svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_2_1/
+	cd ruby_2_1
 	autoconf
 	./configure --prefix=$PREFIX --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX
 	make
 	make install
 else #-------------------------------------------------------------------------
-	getunpack http://ftp.ruby-lang.org/pub/ruby/2.0/ruby-2.0.0-p0.tar.gz
-	buildinstall ruby-2.0.0-p0 --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX
+	getunpack http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.0.tar.gz
+	buildinstall ruby-2.1.0 --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX
 fi #---------------------------------------------------------------------------
 
-# RubyGems installs with Ruby 2.0.0
+# RubyGems installs with Ruby 2.1
 $PREFIX/bin/gem update --system # Ensure RubyGems is up to date
 $PREFIX/bin/gem update --no-ri --no-rdoc # Ensure preinstalled gems are up to date
 
@@ -186,8 +186,7 @@ gem install mysql --no-rdoc --no-ri -- --with-mysql-config=/usr/bin/mysql_config
 gem install pg --no-rdoc --no-ri
 #gem install psych --no-ri --no-rdoc -- --with-opt-dir=$PREFIX # In case psych doesn't install with ruby
 
-###############################################################################
-# Nginx 1.2.8
+# Nginx 1.5.8
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -213,7 +212,7 @@ export PASSENGER_ROOT=`passenger-config --root`
 # Specify place for passenger module to compile.
 # /tmp won't do (permission denied error because of execbit)
 mkdir -p $PREFIX/var/tmp
-chmod 777 $PREFIX/var/tmp
+chmod 755 $PREFIX/var/tmp
 export TMPDIR=$PREFIX/var/tmp
 
 # Note:
@@ -221,19 +220,17 @@ export TMPDIR=$PREFIX/var/tmp
 # export LD_RUN_PATH=$PREFIX/lib
 # right here to prevent PassengerWatchdog from failing to start with nginx.
 
-getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.32.tar.gz
-getunpack http://zlib.net/zlib-1.2.7.tar.gz
-getunpack http://www.openssl.org/source/openssl-1.0.1e.tar.gz
-getunpack http://nginx.org/download/nginx-1.2.8.tar.gz
+# Removed "--with-http_ssl_module \" because frontend webserver is the one that handles https
+
+getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.34.tar.gz
+getunpack http://zlib.net/zlib-1.2.8.tar.gz
+getunpack http://nginx.org/download/nginx-1.5.8.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-buildinstall nginx-1.2.8 \
+buildinstall nginx-1.5.8 \
 --with-pcre=$PREFIX/src/pcre-8.32 \
 --with-zlib=$PREFIX/src/zlib-1.2.7 \
---with-openssl=$PREFIX/src/openssl-1.0.1e \
 --with-http_realip_module \
 --with-http_gzip_static_module \
---with-http_ssl_module \
---with-http_flv_module \
 --add-module=$PREFIX/src/nginx-upstream-fair \
 --add-module=$PASSENGER_ROOT/ext/nginx \
 --conf-path=$PREFIX/etc/nginx/nginx.conf \
@@ -435,7 +432,7 @@ http {
   tcp_nodelay off;
 
   gzip on;
-	gzip_static on;
+  gzip_static on;
   gzip_http_version 1.0;
   gzip_buffers 16 8k;
   gzip_comp_level 5;
@@ -600,12 +597,12 @@ server {
 EOF
 
 ###############################################################################
-# Monit 5.5
+# Monit 5.6
 # Monit is a watchdog that manages processes. It makes sure that processes are
 # running and that they behave.
 
-getunpack http://mmonit.com/monit/dist/monit-5.5.tar.gz
-buildinstall monit-5.5
+getunpack http://mmonit.com/monit/dist/monit-5.6.tar.gz
+buildinstall monit-5.6
 
 # Note to self:
 # If configure fails, try:
