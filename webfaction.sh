@@ -227,8 +227,8 @@ getunpack http://zlib.net/zlib-1.2.8.tar.gz
 getunpack http://nginx.org/download/nginx-1.5.8.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
 buildinstall nginx-1.5.8 \
---with-pcre=$PREFIX/src/pcre-8.32 \
---with-zlib=$PREFIX/src/zlib-1.2.7 \
+--with-pcre=$PREFIX/src/pcre-8.34 \
+--with-zlib=$PREFIX/src/zlib-1.2.8 \
 --with-http_realip_module \
 --with-http_gzip_static_module \
 --add-module=$PREFIX/src/nginx-upstream-fair \

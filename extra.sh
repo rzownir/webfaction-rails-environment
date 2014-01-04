@@ -86,10 +86,8 @@ buildinstall icu/source
 # The latest source is in http://hg.mozilla.org/mozilla-central/archive/tip.tar.gz.
 # But we'll use the latest standalone version.
 
-cd $PREFIX/src
-wget https://ftp.mozilla.org/pub/mozilla.org/js/mozjs-24.2.0.tar.bz2
-tar xjvf mozjs-24.2.0.tar.bz2
-buildinstall mozjs-24.2.0/js/src
+getunpack http://ftp.mozilla.org/pub/mozilla.org/js/mozjs17.0.0.tar.gz
+buildinstall mozjs17.0.0/js/src
 
 # Make sure couchdb is linked to the libraries it depends on.
 # I used to have "export LD_LIBRARY_PATH=$PREFIX/lib", but this is hackish.
