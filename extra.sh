@@ -83,11 +83,10 @@ getunpack http://download.icu-project.org/files/icu4c/52.1/icu4c-52_1-src.tgz
 buildinstall icu/source
 
 # Mozilla SpiderMonkey
-# The latest source is in http://hg.mozilla.org/mozilla-central/archive/tip.tar.gz.
-# But we'll use the latest standalone version.
+# We want version 1.8.5, which plays nice with the CouchDB 1.5.0 build
 
-getunpack http://ftp.mozilla.org/pub/mozilla.org/js/mozjs17.0.0.tar.gz
-buildinstall mozjs17.0.0/js/src
+getunpack http://ftp.mozilla.org/pub/mozilla.org/js/js185-1.0.0.tar.gz
+buildinstall js-1.8.5/js/src
 
 # Make sure couchdb is linked to the libraries it depends on.
 # I used to have "export LD_LIBRARY_PATH=$PREFIX/lib", but this is hackish.
@@ -109,7 +108,7 @@ getunpack http://apache.cs.utah.edu/couchdb/source/1.5.0/apache-couchdb-1.5.0.ta
 # So let's add that newline with:
 #echo "" >> $PREFIX/src/apache-couchdb-1.1.1/src/couchdb/priv/couch_js/utf8.h
 
-buildinstall apache-couchdb-1.5.0 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include
+buildinstall apache-couchdb-1.5.0 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include/js
 
 
 ###############################################################################
