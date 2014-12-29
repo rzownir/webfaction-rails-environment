@@ -1,0 +1,5 @@
+clear && ps -u $USER -o rss,pid,command
+ps -u $USER -o rss | grep -v peruser | awk '{sum+=$1} END {printf("\n%.0fMB total RSS\n", 
+sum/1024)}'
+(ps -u $USER -o pid | awk '{ print "grep Private_Dirty /proc/"$1"/smaps" }' | sh | awk '{ 
+sum += $2 } END { printf("%.0fMB total Private Dirty RSS\n\n", sum/1024) }') 2>/dev/null

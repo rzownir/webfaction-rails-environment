@@ -5,15 +5,16 @@ users in mind, but is fairly generic. The directories `$HOME/logs/user` and
 `$HOME/webapps/$APP_NAME` are assumed to exist.
 
 ## What's Provided
-* Git 1.8.5.2
-* SQLite3 3.8.2
-* Your choice of Ruby 2.1.0 or latest Ruby from the 2.1 subversion branch
-* Latest RubyGems
-* Gems: rack, rails, thin, unicorn, passenger, capistrano, sqlite3-ruby, mysql
-* nginx 1.5.8 (with nginx-upstream-fair module for fair load balancing and
-  passenger module)
-* Monit 5.6
-* Startup scripts and working default configuration files for monit and nginx
+* git
+* sqlite
+* memcached (+ libevent)
+* ruby (+ autoconf + openssl + libffi + yaml + gdbm) [tarball or subversion, see `RUBY_SVN` variable]
+* rubygems: rack, rails, thin, unicorn, passenger, capistrano, sqlite3, mysql, pg, psych (commented out), memcache-client, memcached
+* php (+ spawn-fcgi) [optional, see `INSTALL_PHP` variable]
+* nginx (+ nginx-upstream-fair module [fair load balancing] + passenger module + pcre + zlib)
+* monit
+* couchdb (+ erlang + curl + icu4c + spidermonkey) [optional, see `INSTALL_COUCHDB` variable]
+* startup scripts and working default configuration files for nginx and monit
 
 ## Options
 You have the choice of running with passenger or a thin cluster. Passenger is
@@ -40,8 +41,12 @@ the default. You will have to follow a few extra steps to run thin. See below.
        one. The default value is `4000`.
      * `MONIT_PORT` is the port WebFaction assigned to the app created in step
        two. The default value is `4002`.
-4. If you want to install Ruby 1.9.3 from the official subversion repository,
-   edit line 12 of the script to read `export RUBYSVN=true`
+4. If you want to install ruby from the official subversion repository,
+   edit line 12 of the script to read `export RUBY_SVN=true`
+5. If you want to install php and spawnfcgi, edit line 13 of the script to read
+   `export INSTALL_PHP=true`
+6. If you want to install couchdb and erlang, edit line 14 of the script to read
+   `export INSTALL_COUCHDB=true`
 
 ## After Running the Script
 If no errors occurred, your rails app will be up and running in the production
@@ -86,7 +91,7 @@ out the passenger directives: `passenger_root` (most importantly), `passenger_ru
 Also make sure that the upstream thin directive is uncommented in the nginx.conf
 file. I didn't comment it out to begin with because it doesn't do any harm.
 
-## Other Notes
+## psplus
 Although the passenger stack uses less memory, the reported rss is probably higher.
 This is because of multiple counting. Depending on how WebFaction meters memory
 usage, this could be a practical downside.
@@ -98,12 +103,4 @@ memory usage) run these commands:
 	(ps -u $USER -o pid | awk '{ print "grep Private_Dirty /proc/"$1"/smaps" }' | sh | awk '{ sum += $2 } END { printf("%.0fMB total Private Dirty RSS\n\n", sum/1024) }') 2>/dev/null
 
 You will see that your actual physical memory usage is much smaller than what rss
-reports.
-
-## Extras
-The script `extra.sh` contains some additional goodies:
-
-* Memcached
-* PHP + spawn-fcgi
-* Erlang
-* CouchDB
+reports. Use the psplus script included to display this. Move it into `$PREFIX/bin` and `chmod 755 $PREFIX/bin/psplus`.

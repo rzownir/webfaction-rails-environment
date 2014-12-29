@@ -3,13 +3,15 @@
 # WebFaction Application Stack Build Script
 # (c) 2008-2014 - Ronald M. Zownir
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Edit these variables as instructed in the README.
 export PREFIX=$HOME/apps
 export APP_NAME=myrailsapp
 export APP_PORT=4000
 export MONIT_PORT=4002
-export RUBYSVN=false
+export RUBY_SVN=false
+export INSTALL_PHP=false
+export INSTALL_COUCHDB=false
 
 # My server is a Xeon E5620 (32-bit mode). Safe CFLAGS:
 #CHOST="i686-pc-linux-gnu"
@@ -22,7 +24,7 @@ export RUBYSVN=false
 # To find out what processor your server has, so you can set -march correctly,
 # cat /proc/cpuinfo
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Back up $HOME/.bash_profile and write a clean file. The string limiter
 # definition can be quoted with single or double quotes at the beginning to
 # prevent parameter substitution. We require parameter substitution here.
@@ -40,7 +42,7 @@ fi
 # User specific environment and startup programs
 EOF
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Back up $HOME/.bashrc and write a new file. Extend $PATH to include the paths
 # of the private application environment binaries. PATH is defined in
 # $HOME/.bashrc and not $HOME/.bash_profile, it's because only $HOME/.bashrc is
@@ -62,7 +64,7 @@ PREFIX=$PREFIX
 export PATH=\$PREFIX/bin:\$PREFIX/sbin:\$PATH
 EOF
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Write a clean $HOME/.bash_logout file after backing up the original.
 
 mv $HOME/.bash_logout $HOME/.bash_logout.old
@@ -73,7 +75,7 @@ cat > $HOME/.bash_logout << EOF
 clear
 EOF
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Execute $HOME/.bash_profile to update the environment with the changes made.
 # Then create the private application environment directory and ensure that it
 # has permissions of 755. Afterward, create the directory where sources will be
@@ -85,7 +87,13 @@ chmod 755 $PREFIX
 chmod 750 $HOME # In case $PREFIX is $HOME!
 mkdir $PREFIX/src
 
-###############################################################################
+# Specify place for passenger module to compile.
+# /tmp won't do (permission denied error because of execbit)
+mkdir -p $PREFIX/var/tmp
+chmod 755 $PREFIX/var/tmp
+export TMPDIR=$PREFIX/var/tmp
+
+#------------------------------------------------------------------------------
 # Function to download and unarchive .tar.gz files
 
 function getunpack {
@@ -103,90 +111,120 @@ function buildinstall {
 	make install
 }
 
-###############################################################################
-# Git 1.8.5.2
+#------------------------------------------------------------------------------
+# gnuplot
+# Not necessary, but its great to have and I use it
+
+#getunpack http://hivelocity.dl.sourceforge.net/project/gnuplot/gnuplot/4.6.6/gnuplot-4.6.6.tar.gz
+#buildinstall gnuplot-4.6.6
+
+#------------------------------------------------------------------------------
+# Git (master branch from github.com)
 # Git is a great source code management system. Git will be used to retrieve
 # the third party nginx-upstream-fair module for nginx.
 
-getunpack http://git-core.googlecode.com/files/git-1.8.5.2.tar.gz
-cd git-1.8.5.2
+cd $PREFIX/src
+wget https://github.com/git/git/archive/master.zip -O git-master.zip
+unzip git-master.zip
+cd git-master
+make configure
 ./configure --prefix=$PREFIX
 make all
 make install
 
-cd $PREFIX/share/man/
-wget http://git-core.googlecode.com/files/git-manpages-1.8.5.2.tar.gz
-tar xzvf git-manpages-1.8.5.2.tar.gz
-rm git-manpages-1.8.5.2.tar.gz
-
-###############################################################################
-# SQLite3 3.8.2
+#------------------------------------------------------------------------------
+# SQLite3
 # The latest sqlite3-ruby gem requires a version of SQLite3 that may be newer
 # than what is on your system. Here's how to install your own up-to-date copy.
 
-getunpack http://www.sqlite.org/2013/sqlite-autoconf-3080200.tar.gz
-buildinstall sqlite-autoconf-3080200
+getunpack http://www.sqlite.org/2014/sqlite-autoconf-3080704.tar.gz
+buildinstall sqlite-autoconf-3080704
 
-###############################################################################
-# openssl 1.0.1e
+#------------------------------------------------------------------------------
+# openssl
 # For ruby openssl
 
-getunpack http://www.openssl.org/source/openssl-1.0.1e.tar.gz
-cd $PREFIX/src/openssl-1.0.1e
+getunpack https://www.openssl.org/source/openssl-1.0.1j.tar.gz
+cd $PREFIX/src/openssl-1.0.1j
 ./config --prefix=$PREFIX
 make
 make install
 
-###############################################################################
-# libffi 3.0.13
+#------------------------------------------------------------------------------
+# libffi
 # For ruby fiddle (optional)
 
-getunpack ftp://sourceware.org/pub/libffi/libffi-3.0.13.tar.gz
-buildinstall libffi-3.0.13
+getunpack ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
+buildinstall libffi-3.2.1
 
-###############################################################################
-# libyaml 0.1.4
+#------------------------------------------------------------------------------
+# libyaml
 # For ruby psych
 
-getunpack http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
-buildinstall yaml-0.1.4
+getunpack http://pyyaml.org/download/libyaml/yaml-0.1.5.tar.gz
+buildinstall yaml-0.1.5
 
-###############################################################################
-# gdbm 1.10
+#------------------------------------------------------------------------------
+# gdbm
 # For ruby gdbm
 
-getunpack ftp://ftp.gnu.org/gnu/gdbm/gdbm-1.10.tar.gz
-buildinstall gdbm-1.10
+getunpack ftp://ftp.gnu.org/gnu/gdbm/gdbm-1.11.tar.gz
+buildinstall gdbm-1.11
 
-###############################################################################
-# Install either Ruby 2.1.0 or latest from 2.1 subversion branch
+#------------------------------------------------------------------------------
+# memcached
 
-if [ $RUBYSVN == true ]
-then #-------------------------------------------------------------------------
+getunpack http://iweb.dl.sourceforge.net/project/levent/libevent/libevent-2.0/libevent-2.0.21-stable.tar.gz
+buildinstall libevent-2.0.21-stable
+
+getunpack http://www.memcached.org/files/memcached-1.4.21.tar.gz
+buildinstall memcached-1.4.21
+
+#------------------------------------------------------------------------------
+# ruby
+
+if [ $RUBY_SVN == true ]; then
+	# ruby requires a newer autoconf than on my system
+	getunpack http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz
+	buildinstall autoconf-2.69
+	
 	cd $PREFIX/src
-	svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_2_1/
-	cd ruby_2_1
-	autoconf
-	./configure --prefix=$PREFIX --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX
+	svn export http://svn.ruby-lang.org/repos/ruby/branches/ruby_2_2/
+	cd ruby_2_2
+	$PREFIX/bin/autoconf # For some reason, I have to specify path
+	./configure --prefix=$PREFIX --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX --disable-install-rdoc
 	make
 	make install
-else #-------------------------------------------------------------------------
-	getunpack http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.0.tar.gz
-	buildinstall ruby-2.1.0 --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX
-fi #---------------------------------------------------------------------------
+else
+	getunpack http://cache.ruby-lang.org/pub/ruby/2.2/ruby-2.2.0.tar.gz
+	buildinstall ruby-2.2.0 --with-opt-dir=$PREFIX --with-openssl-dir=$PREFIX --with-gdbm-dir=$PREFIX --with-yaml-dir=$PREFIX --with-libffi-dir=$PREFIX --disable-install-rdoc
+fi
 
-# RubyGems installs with Ruby 2.1
-$PREFIX/bin/gem update --system # Ensure RubyGems is up to date
-$PREFIX/bin/gem update --no-ri --no-rdoc # Ensure preinstalled gems are up to date
+$PREFIX/bin/gem update --system # Update RubyGems installed with ruby
+$PREFIX/bin/gem update --no-ri --no-rdoc # Update preinstalled gems
 
-# Install some gems...
+# Install some gems
 gem install rack rails thin unicorn passenger capistrano --no-rdoc --no-ri
 gem install sqlite3 --no-ri --no-rdoc -- --with-sqlite3-dir=$PREFIX
 gem install mysql --no-rdoc --no-ri -- --with-mysql-config=/usr/bin/mysql_config
 gem install pg --no-rdoc --no-ri
 #gem install psych --no-ri --no-rdoc -- --with-opt-dir=$PREFIX # In case psych doesn't install with ruby
+gem install memcache-client --no-rdoc --no-ri # All ruby memcached client
+gem install memcached --no-rdoc --no-ri # Fast client with lots of C, but no drop-in support for rails
 
-# Nginx 1.5.8
+#------------------------------------------------------------------------------
+if [ $INSTALL_PHP == true ]; then
+  # PHP
+  getunpack http://www.php.net/distributions/php-5.6.4.tar.gz
+  buildinstall php-5.6.4 --with-mysql --with-zlib --with-gettext --with-gdbm
+  
+  # spawn-fcgi
+  getunpack http://www.lighttpd.net/download/spawn-fcgi-1.6.4.tar.gz
+  buildinstall spawn-fcgi-1.6.4
+fi
+
+#------------------------------------------------------------------------------
+# Nginx
 # For good reason, the most popular frontend webserver for rails applications
 # is nginx. It's easy to configure, requires very little memory even under
 # heavy load, fast at serving static pages created with rails page caching, and
@@ -209,30 +247,22 @@ gem install pg --no-rdoc --no-ri
 
 export PASSENGER_ROOT=`passenger-config --root`
 
-# Specify place for passenger module to compile.
-# /tmp won't do (permission denied error because of execbit)
-mkdir -p $PREFIX/var/tmp
-chmod 755 $PREFIX/var/tmp
-export TMPDIR=$PREFIX/var/tmp
-
-# Note:
-# If upgrading Passenger, and you installed curl along with CouchDB, run:
+# Note: If upgrading Passenger, and you installed curl along with CouchDB, execute
+# the following to prevent PassengerWatchdog from failing to start with nginx
 # export LD_RUN_PATH=$PREFIX/lib
-# right here to prevent PassengerWatchdog from failing to start with nginx.
 
 # Removed "--with-http_ssl_module \" because frontend webserver is the one that handles https
 
-getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.34.tar.gz
+getunpack ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.36.tar.gz
 getunpack http://zlib.net/zlib-1.2.8.tar.gz
-getunpack http://nginx.org/download/nginx-1.5.8.tar.gz
+getunpack http://nginx.org/download/nginx-1.7.9.tar.gz
 git clone git://github.com/gnosek/nginx-upstream-fair.git nginx-upstream-fair
-buildinstall nginx-1.5.8 \
---with-pcre=$PREFIX/src/pcre-8.34 \
+buildinstall nginx-1.7.9 \
+--with-pcre=$PREFIX/src/pcre-8.36 \
 --with-zlib=$PREFIX/src/zlib-1.2.8 \
 --with-http_realip_module \
 --with-http_gzip_static_module \
 --add-module=$PREFIX/src/nginx-upstream-fair \
---add-module=$PASSENGER_ROOT/ext/nginx \
 --conf-path=$PREFIX/etc/nginx/nginx.conf \
 --error-log-path=$PREFIX/var/log/nginx/error.log \
 --http-log-path=$PREFIX/var/log/nginx/access.log \
@@ -243,14 +273,15 @@ buildinstall nginx-1.5.8 \
 --http-fastcgi-temp-path=$PREFIX/var/spool/nginx/fastcgi_temp \
 --http-uwsgi-temp-path=$PREFIX/var/spool/nginx/uwsgi_temp \
 --http-scgi-temp-path=$PREFIX/var/spool/nginx/scgi_temp
+#--add-module=$PASSENGER_ROOT/ext/nginx \ # trouble building with this right now, passenger may need fix
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Remove the html directory created by nginx. It's out of place and was only
 # meant to complement the example nginx.conf file that will be replaced soon.
 
 rm -rf $PREFIX/html
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Remove the log directory created by nginx, create a symlink to the central
 # user log directory, and recreate the nginx directory inside the symlinked
 # log directory.
@@ -259,21 +290,21 @@ rm -rf $PREFIX/var/log
 ln -s $HOME/logs/user $PREFIX/var/log
 mkdir $PREFIX/var/log/nginx
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Create the necessary directory structure for client_body_temp, proxy_temp,
 # fastcgi_temp, uwsgi_temp, and scgi_temp directories. Nginx will create those
 # directories for us when it runs.
 
 mkdir -p $PREFIX/var/spool/nginx
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Symlink $PREFIX/var/www to $HOME/webapps. $PREFIX/var/www is a more correct
 # point of reference to your web applications from a hierarchal point of view.
 # The motivation behind this is purely a semantic one.
 
 ln -s $HOME/webapps $PREFIX/var/www
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Create a tmp directory in var. This is where sockets go. Use unix sockets
 # where you can instead of ports. They provide lower latency and eliminate
 # unnecessary exposure.
@@ -283,479 +314,69 @@ ln -s $HOME/webapps $PREFIX/var/www
 #mkdir $PREFIX/var/tmp
 #chmod 777 $PREFIX/var/tmp
 
-###############################################################################
-# Create a directory to store rc scripts for daemons.
-
-mkdir $PREFIX/etc/rc.d
-
-###############################################################################
-# Create the nginx rc script. I improved the second if structure in nginx_start
-# so that an orphan nginx pid file does not cause a problem.
-
-cat > $PREFIX/etc/rc.d/nginx << EOF
-#!/bin/sh
-#
-# Nginx daemon control script.
-# 
-# This is an rc script for the nginx daemon.
-# To use nginx, you must first set up the config file(s).
-#
-# Written by Cherife Li <cherife@dotimes.com>.
-# Source: http://dotimes.com/slackbuilds/nginx/rc.nginx
-
-DAEMON=$PREFIX/sbin/nginx
-CONF=$PREFIX/etc/nginx/nginx.conf
-PID=$PREFIX/var/run/nginx.pid
-
-nginx_start() {
-  # Sanity checks.
-  if [ ! -r \$CONF ]; then # no config file, exit:
-    echo "Please check the nginx config file, exiting..."
-    exit
-  fi
-
-  if [[ -s \$PID && \`ps -p \\\`cat \$PID\\\` -o comm=\` = "nginx" ]]; then
-    echo "Nginx is already running?"
-    exit
-  fi
-
-  echo "Starting Nginx server daemon:"
-  if [ -x \$DAEMON ]; then
-    \$DAEMON -c \$CONF
-  fi
-}
-
-nginx_test_conf() {
-  echo -e "Checking configuration for correct syntax and\nthen try to open files referred in configuration..."
-  \$DAEMON -t -c \$CONF
-}
-
-nginx_term() {
-  echo "Shutdown Nginx quickly..."
-  kill -TERM \`cat \$PID\`
-}
-
-nginx_quit() {
-  echo "Shutdown Nginx gracefully..."
-  kill -QUIT \`cat \$PID\`
-}
-
-nginx_reload() {
-  echo "Reloading Nginx configuration..."
-  kill -HUP \`cat \$PID\`
-}
-
-nginx_upgrade() {
-  echo -e "Upgrading to the new Nginx binary.\nMake sure the Nginx binary have been replaced with new one\nor Nginx server modules were added/removed."
-  kill -USR2 \`cat \$PID\`
-  sleep 3
-  kill -QUIT \`cat \$PID.oldbin\`
-}
-
-nginx_restart() {
-  nginx_quit
-  sleep 5
-  nginx_start
-}
-
-case "\$1" in
-'test')
-  nginx_test_conf
-  ;;
-'start')
-  nginx_start
-  ;;
-'term')
-  nginx_term
-  ;;
-'quit'|'stop')
-  nginx_quit
-  ;;
-'reload')
-  nginx_reload
-  ;;
-'restart')
-  nginx_restart
-  ;;
-'upgrade')
-  nginx_upgrade
-  ;;
-*)
-  echo "usage \$0 test|start|term|quit(stop)|reload|restart|upgrade"
-esac
-EOF
-
-chmod 755 $PREFIX/etc/rc.d/nginx
-
-###############################################################################
-# Create the nginx.conf file, based on the one by Ezra Zygmuntowicz. The user
-# directive is commented out because the nginx master process is not run by
-# root. Therefore, the worker processes are run by nobody, the default user.
-
-cat > $PREFIX/etc/nginx/nginx.conf << EOF
-# user and group to run as
-#user $USER $USER;
-
-worker_processes  4;
-
-pid $PREFIX/var/run/nginx.pid;
-
-events {
-  worker_connections 1024;
-}
-
-http {
-  passenger_root $PASSENGER_ROOT;
-  passenger_ruby $PREFIX/bin/ruby;
-  passenger_max_pool_size 4; # max total instances (default is 6)
-  passenger_max_instances_per_app 2;
-  passenger_friendly_error_pages off; # don't expose traces to site visitors
-
-  set_real_ip_from 192.168.1.0/24; # [public] server IP (change this to your IP)
-  set_real_ip_from 127.0.0.1;
-  real_ip_header X-Real-IP;
-
-  include $PREFIX/etc/nginx/mime.types;
-  default_type application/octet-stream;
-
-  # might need to substitute $http_x_forwarded_for for $remote_addr if $remote_addr
-  # turns out to be 127.0.0.1
-  log_format main '\$remote_addr - \$remote_user [\$time_local] '
-                  '"\$request" \$status \$body_bytes_sent "\$http_referer" '
-                  '"\$http_user_agent" "\$http_x_forwarded_for"';
-  access_log $PREFIX/var/log/nginx/access.log main;
-  error_log  $PREFIX/var/log/nginx/error.log  debug;
-
-  sendfile on; # turn off on Mac OS X
-
-  tcp_nopush on;
-  tcp_nodelay off;
-
-  gzip on;
-  gzip_static on;
-  gzip_http_version 1.0;
-  gzip_buffers 16 8k;
-  gzip_comp_level 5;
-  gzip_proxied any;
-  gzip_types text/plain text/css application/x-javascript text/xml application/rss+xml;
-
-  # reverse proxy clusters
-  upstream thin {
-    fair; # requires nginx-upstream-fair module
-    server unix:$PREFIX/var/tmp/thin.0.sock;
-    server unix:$PREFIX/var/tmp/thin.1.sock;
-    #server 127.0.0.1:5000;
-    #server 127.0.0.1:5001;
-    #server 127.0.0.1:5002;
-  }
-
-  include $PREFIX/etc/nginx/vhosts/*.conf;
-}
-EOF
-
-###############################################################################
-# Create the vhost and certs directories
-
-mkdir $PREFIX/etc/nginx/vhosts
-mkdir $PREFIX/etc/nginx/certs
-
-###############################################################################
-# Create a vhost conf file based on the information provided at the beginning
-# of this script. With http vhosts (as opposed to https vhosts using ssl), you
-# would normally assign them each a name using the server_name directive.
-# Because ssl certificates validated by a Certificate Authority are pegged
-# to an IP address rather than a domain or subdomain, the server_name
-# directive is practically irrelevant for https vhosts. For http vhosts however,
-# the directive differentiates vhosts listening on a single port by the domain
-# name used to reach the server. The server_name doesn't really matter unless
-# you want to make such a distinction. WebFaction uses the Apache equivalent to
-# connect your domains and subdomains listening on port 80 (http) or 443
-# (https) to the port assigned to your rails application. There's not much of a
-# need for the server_name directive on WebFaction because Apache handles the
-# most common use case for you behind the scenes. One instance in which
-# server_name does come in handy on WebFaction is if you want to rewrite a
-# domain from www.example.com to example.com or example.net to example.com.
-# This requires that the involved domains/subdomains point to the same app
-# (more specifically the same port) as configured on the sites page of the
-# WebFaction control panel. Here's how to do that in a vhost conf file:
-#
-# Permanently move address from www.example.com to example.com
-# server {
-#   listen 4321;
-#   server_name www.example.com;
-#   rewrite ^ $scheme://example.com$uri permanent;
-# }
-# 
-# server {
-#   listen 4321;
-#   server_name example.com;
-#   ...
-
-cat > $PREFIX/etc/nginx/vhosts/$APP_NAME.conf << EOF
-server {
-  listen $APP_PORT;
-  server_name .example.com; # Change this or comment it out
-	access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
-  root $PREFIX/var/www/$APP_NAME/public;
-  passenger_enabled on;
-}
-EOF
-
-###############################################################################
-# Create a sample vhost file for using a thin cluster instead of passenger.
-# Because the extension is .example it will not be loaded when nginx starts.
-
-cat > $PREFIX/etc/nginx/vhosts/$APP_NAME-thin.conf.example << EOF
-server {
-  listen $APP_PORT; # Can also be IP:PORT
-  server_name .example.com;
-  access_log $PREFIX/var/log/nginx/${APP_NAME}_access.log main;
-  root $PREFIX/var/www/$APP_NAME/public;
-
-  client_max_body_size 20M; # Max size for file uploads
-
-  location / {
-    try_files /system/maintenance.html \$uri \$uri/index.html \$uri.html @backend;
-  }
-
-  location @backend {
-    proxy_set_header  X-Real-IP       \$remote_addr;
-    proxy_set_header  X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header  Host            \$http_host;
-    proxy_redirect false;
-    proxy_max_temp_file_size 0;
-    proxy_pass http://thin;
-  }
-
-  error_page 500 502 503 504 /500.html;
-  location = /500.html {
-    root $PREFIX/var/www/$APP_NAME/public;
-  }
-}
-EOF
-
-###############################################################################
-# Create a sample https vhost file. You'll need to create SSL certificates
-# (see http://www.akadia.com/services/ssh_test_certificate.html on how) and
-# modify the conf according to your circumstances.
-
-# Since your private nginx is not the frontmost server, both http and https
-# requests will land on a single nginx http vhost. Therefore, you may need to
-# create a proxy header in the nginx conf file that differentiates between http
-# and https requests. You will have to see for yourself, since I haven't
-# worked this out myself.
-
-cat > $PREFIX/etc/nginx/vhosts/https.conf.example << EOF
-server {
-  listen 443;
-  access_log $PREFIX/var/log/nginx/https_access.log main;
-  root $PREFIX/var/www/$APP_NAME/public;
-  passenger_enabled on;
-
-  # See http://rubyjudo.com/2006/11/2/nginx-ssl-rails
-  ssl on;
-  ssl_certificate $PREFIX/etc/nginx/certs/server.crt;
-  ssl_certificate_key $PREFIX/etc/nginx/certs/server.key;
-}
-EOF
-
-###############################################################################
-# Create a sample https vhost file for use with a thin cluster.
-
-cat > $PREFIX/etc/nginx/vhosts/https-thin.conf.example << EOF
-server {
-  listen 443; # Probably going to use IP:443
-  access_log $PREFIX/var/log/nginx/https_access.log main;
-  root $PREFIX/var/www/$APP_NAME/public;
-
-  client_max_body_size 20M; # Max size for file uploads
-
-  # See http://rubyjudo.com/2006/11/2/nginx-ssl-rails
-  ssl on;
-  ssl_certificate $PREFIX/etc/nginx/certs/server.crt;
-  ssl_certificate_key $PREFIX/etc/nginx/certs/server.key;
-
-  location / {
-    try_files /system/maintenance.html \$uri \$uri/index.html \$uri.html @backend;
-  }
-
-  location @backend {
-    proxy_set_header X-FORWARDED_PROTO https;
-    proxy_set_header X-Real-IP         \$remote_addr;
-    proxy_set_header X-Forwarded-For   \$proxy_add_x_forwarded_for;
-    proxy_set_header Host              \$http_host;
-    proxy_redirect false;
-    proxy_max_temp_file_size 0;
-    proxy_pass http://thin;
-  }
-
-  error_page 500 502 503 504 /500.html;
-  location = /500.html {
-    root $PREFIX/var/www/$APP_NAME/public;
-  }
-}
-EOF
-
-###############################################################################
-# Monit 5.6
-# Monit is a watchdog that manages processes. It makes sure that processes are
-# running and that they behave.
-
-getunpack http://mmonit.com/monit/dist/monit-5.6.tar.gz
-buildinstall monit-5.6
-
-# Note to self:
-# If configure fails, try:
-# ./configure --prefix=$PREFIX --without-ssl
-# I can't get monit to configure successfully with ssl on Debian, but
-# WebFaction uses RHEL on its older machines and CentOS on its newer ones.
-# Things should go without a hitch on WebFaction's machines.
-
-###############################################################################
-# Create the monitrc file. Edit and uncomment lines as necessary.
-
-cat > $PREFIX/etc/monitrc << EOF
-set daemon 60 # 30, 60, or 120 second intervals are good
-set logfile $PREFIX/var/log/monit.log
-set httpd port $MONIT_PORT #and use address MY-IP-ADDRESS
-	allow localhost
-	#allow MY-IP-ADDRESS
-	#allow username:password # basic auth
-#set mailserver smtp.gmail.com port 587 username "MYUSERNAME@gmail.com" password "MYPASSWORD" using tlsv1 with timeout 30 seconds
-#set mail-format {from:monit@example.com}
-#set alert sysadmin@example.com #only on { timeout, nonexist } # Default email to send alerts to
-include $PREFIX/etc/monit/*.monitrc
-EOF
-
-chmod 700 $PREFIX/etc/monitrc
-
-###############################################################################
-# Make the directory that holds the individual configuration files for monit.
-
-mkdir $PREFIX/etc/monit
-
-###############################################################################
-# Create a monit configuration file for nginx. It's wise to have a failed port
-# line for each port nginx listens on. Feel free to tweak the numbers as you
-# see fit.
-
-cat > $PREFIX/etc/monit/nginx.monitrc << EOF
-check process nginx
-  with pidfile $PREFIX/var/run/nginx.pid
-  start program "$PREFIX/etc/rc.d/nginx start"
-  stop program "$PREFIX/etc/rc.d/nginx stop"
-  if totalmem > 15.0 MB for 5 cycles then restart
-  if failed port $APP_PORT then restart
-  if cpu usage > 95% for 3 cycles then restart
-  if 5 restarts within 5 cycles then timeout
-  group nginx
-EOF
-
-###############################################################################
-# Create a sample monit configuration file for the thin servers. This is based
-# on the one that comes with the thin gem. It's located in the thin gem's
-# examples directory.
-
-cat > $PREFIX/etc/monit/$APP_NAME.monitrc.example << EOF
-check process ${APP_NAME}0
-  with pidfile $PREFIX/var/run/thin.0.pid
-  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/run/thin.pid -o 0"
-  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/run/thin.0.pid"
-  if totalmem > 90.0 MB for 5 cycles then restart
-  if failed unixsocket $PREFIX/var/tmp/thin.0.sock then restart
-  if cpu usage > 95% for 3 cycles then restart
-  if 5 restarts within 5 cycles then timeout
-  group $APP_NAME
-
-check process ${APP_NAME}1
-  with pidfile $PREFIX/var/run/thin.1.pid
-  start program = "$PREFIX/bin/ruby $PREFIX/bin/thin start -d -c $PREFIX/var/www/$APP_NAME -e production -s 2 -S $PREFIX/var/tmp/thin.sock -P $PREFIX/var/run/thin.pid -o 1"
-  stop program  = "$PREFIX/bin/ruby $PREFIX/bin/thin stop -P $PREFIX/var/run/thin.1.pid"
-  if totalmem > 90.0 MB for 5 cycles then restart
-  if failed unixsocket $PREFIX/var/tmp/thin.1.sock then restart
-  if cpu usage > 95% for 3 cycles then restart
-  if 5 restarts within 5 cycles then timeout
-  group $APP_NAME
-EOF
-
-###############################################################################
-# Create the boot script. The script removes pid files from the canonical
-# location $PREFIX/var/run. Orphaned pid files will prevent applications such
-# as thin from starting. The script will then start monit which in turn will
-# start up all monitored applications. "monit start all" isn't strictly
-# necessary, but if you execute "monit stop all" or "monit stop APP_NAME", monit
-# remembers this and won't start them automatically on reboot just by calling
-# "monit". Such daemons need to be reactivated using "monit start all" or "monit
-# start APP_NAME".
-
-# Be careful running the boot script arbitrarily; you don't want to delete the
-# pid files of running processes! If you do, don't panic. Execute "killall -u $USER".
-# Your ssh session will be killed along with all of your applications. Login
-# again and execute "$PREFIX/etc/rc.d/boot" to "reboot" your stack.
-
-cat > $PREFIX/etc/rc.d/boot << EOF
-#!/bin/sh
-
-. \$HOME/.bash_profile
-find \$PREFIX/var/run/ -type f -name *.pid -print0 | xargs -0 rm
-monit
-monit start all
-EOF
-
-chmod 755 $PREFIX/etc/rc.d/boot
-
-###############################################################################
-# To run the boot script when the system reboots, an entry must be made to your
-# crontab file. A copy of your crontab is saved first. If the entry to be
-# prepended already appears in the original file, it is removed by grep before
-# it is saved. The crontab entry is prepended, the new crontab file is enacted,
-# and the two temporary files created are removed.
-
-crontab -l | grep -v "@reboot $PREFIX/etc/rc.d/boot" > $PREFIX/var/tmp/oldcrontab
-cat > $PREFIX/var/tmp/newcrontab << EOF
-@reboot $PREFIX/etc/rc.d/boot
-/usr/sbin/logrotate -s $PREFIX/var/lib/logrotate.status $PREFIX/etc/logrotate.conf
-EOF
-cat $PREFIX/var/tmp/oldcrontab >> $PREFIX/var/tmp/newcrontab
-crontab $PREFIX/var/tmp/newcrontab
-rm $PREFIX/var/tmp/oldcrontab $PREFIX/var/tmp/newcrontab
-
-mkdir -p $PREFIX/var/lib
-touch $PREFIX/var/lib/logrotate.status
-
-cat > $PREFIX/etc/logrotate.conf << EOF
-$HOME/logs/user/nginx/*.log {
-  monthly
-  rotate 6
-  compress
-  postrotate
-    $PREFIX/etc/rc.d/nginx restart
-  endscript
-}
-EOF
-
-# Note to self:
-# crontab isn't working on my ArchLinux machine. The crontab file works
-# perfectly fine on WebFaction, however.
-
-###############################################################################
+#------------------------------------------------------------------------------
+# If upgrading nginx...
+
+#nginx -s stop
+#sleep 3
+#rm $PREFIX/sbin/nginx.old
+#nginx
+
+# !!! >>> IMPORTANT <<< !!!
+# Edit nginx.conf to include correct paths to ruby and passenger
+# Then do nginx -s reload
+
+#------------------------------------------------------------------------------
+# Monit
+# A watchdog that manages processes and ensures they are running properly
+
+getunpack http://mmonit.com/monit/dist/monit-5.11.tar.gz
+buildinstall monit-5.11
+
+#------------------------------------------------------------------------------
+if [ $INSTALL_COUCHDB == true ]; then
+  # Erlang
+  getunpack http://www.erlang.org/download/otp_src_17.4.tar.gz
+  buildinstall otp_src_17.4 #--enable-darwin-64bit # Mac OS X >=10.6
+
+  # CouchDB (requires Erlang)
+  getunpack http://curl.haxx.se/download/curl-7.39.0.tar.gz
+  buildinstall curl-7.39.0
+
+  getunpack http://download.icu-project.org/files/icu4c/54.1/icu4c-54_1-src.tgz
+  # cd icu/source && ./runConfigureICU MacOSX --prefix=$PREFIX --with-library-bits=64 --disable-samples --enable-static # Mac OS X >=10.6
+  buildinstall icu/source
+
+  # Mozilla SpiderMonkey (version 1.8.5, which plays nice with the CouchDB 1.6.1 build)
+  getunpack http://ftp.mozilla.org/pub/mozilla.org/js/js185-1.0.0.tar.gz
+  buildinstall js-1.8.5/js/src
+
+  # Make sure couchdb is linked to the libraries it depends on.
+  # I used to have "export LD_LIBRARY_PATH=$PREFIX/lib", but this is hackish.
+  # And you would have to either run it before couchdb or put it in .bashrc,
+  # which is really bad idea. Google "LD_LIBRARY_PATH bad". It caused problems
+  # for me with other programs, which is why I needed to find a better solution.
+
+  # Note to self:
+  # This doesn't seem to help on Mac OS X, though. The best solution is to add
+  # "export DYLD_LIBRARY_PATH=$PREFIX/lib" (expanding $PREFIX) at the beginning of
+  # $PREFIX/bin/couchdb, which is actually just a shell script.
+
+  export LD_RUN_PATH=$PREFIX/lib # Works on WebFaction!
+
+  getunpack http://mirror.cc.columbia.edu/pub/software/apache/couchdb/source/1.6.1/apache-couchdb-1.6.1.tar.gz
+  buildinstall apache-couchdb-1.6.1 --with-erlang=$PREFIX/lib/erlang/usr/include --with-js-lib=$PREFIX/lib --with-js-include=$PREFIX/include/js
+fi
+
+#------------------------------------------------------------------------------
+# Write the configuration files
+
+DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. "$DIR/write_configs.sh"
+
+#------------------------------------------------------------------------------
 # Start up
 
 monit
 monit start all
-
-# If you want to use thin instead of passenger:
-# 1. Move nginx vhost...
-# mv $PREFIX/etc/nginx/vhosts/$APP_NAME.conf $PREFIX/etc/nginx/vhosts/$APP_NAME-passenger.conf.example
-# mv $PREFIX/etc/nginx/vhosts/$APP_NAME-thin.conf.example $PREFIX/etc/nginx/vhosts/$APP_NAME.conf
-# 2. Move monitrc file...
-# mv $PREFIX/etc/monit/$APP_NAME.monitrc.example $PREFIX/etc/monit/$APP_NAME.monitrc
-# 3. Reinitialize monit and restart all monitored applications...
-# monit reload
-# monit restart all
-# 4. To save memory, prevent passenger processes from starting up with nginx.
-#    You have to manually edit $PREFIX/etc/nginx/nginx.conf. Comment out the
-#    passenger directives: passenger_root (most importantly), passenger_ruby,
-#    passenger_max_pool_size, and any others. Then restart nginx.
-# 5. Also, make sure that the upstream thin directive is uncommented in the
-#    nginx.conf file. I did not comment it out because it doesn't do any harm.
