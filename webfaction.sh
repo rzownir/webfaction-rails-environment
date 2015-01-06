@@ -263,6 +263,7 @@ buildinstall nginx-1.7.9 \
 --with-http_realip_module \
 --with-http_gzip_static_module \
 --add-module=$PREFIX/src/nginx-upstream-fair \
+--add-module=$PASSENGER_ROOT/ext/nginx \
 --conf-path=$PREFIX/etc/nginx/nginx.conf \
 --error-log-path=$PREFIX/var/log/nginx/error.log \
 --http-log-path=$PREFIX/var/log/nginx/access.log \
@@ -273,7 +274,6 @@ buildinstall nginx-1.7.9 \
 --http-fastcgi-temp-path=$PREFIX/var/spool/nginx/fastcgi_temp \
 --http-uwsgi-temp-path=$PREFIX/var/spool/nginx/uwsgi_temp \
 --http-scgi-temp-path=$PREFIX/var/spool/nginx/scgi_temp
-#--add-module=$PASSENGER_ROOT/ext/nginx \ # trouble building with this right now, passenger may need fix
 
 #------------------------------------------------------------------------------
 # Remove the html directory created by nginx. It's out of place and was only
